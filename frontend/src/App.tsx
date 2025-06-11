@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ToastContainer } from 'react-toastify';
+// import { ToastContainer } from 'react-toastify';
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -7,6 +7,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import Files from "./pages/Files";
 import MainLayout from "./layouts/MainLayout";
+import { Toaster } from "@/components/ui/sonner"
+
 
 function App() {
   return (
@@ -28,7 +30,9 @@ function App() {
           </Route>
         </Routes>
       </BrowserRouter>
-      <ToastContainer />
+    <Toaster />
+
+      {/*<ToastContainer />*/}
     </>
   );
 }

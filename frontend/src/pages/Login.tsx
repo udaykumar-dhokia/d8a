@@ -4,7 +4,8 @@ import Header from "../components/ui/Header";
 import Footer from "../components/ui/Footer";
 import logo from "../assets/logo.png";
 import axiosInstance from "../api/axios";
-import { toast } from 'react-toastify';
+import { toast } from "sonner"
+
 
 interface LoginFormData {
 	email: string;
@@ -44,11 +45,11 @@ const Login = () => {
 			const response = await axiosInstance.post<LoginFormData>("/auth/login", formData);
 			setSuccess(`${response.data.message}!`);
 			localStorage.setItem("token", response.data.token);
-			toast.success(response.data.message);
+			toast(response.data.message);
 			navigate("/dashboard");
 		} catch (err: Any){
 			setError(err.response?.data?.message || err.message);
-			toast.error(err.response?.data?.message || err.message);
+			toast(err.response?.data?.message || err.message);
 		} finally {
 			setLoading(false);
 		}

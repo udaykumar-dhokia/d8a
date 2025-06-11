@@ -24,8 +24,19 @@ const FileController = {
       }
 
       const fileBuffer = await fs.readFile(file.path);
+      const fileSize = file.size;
       const fileName = `${decoded.email}_${file.originalname}`;
       const filePath = `https://tciincekcqrncwqewmql.supabase.co/storage/v1/object/public/datasets//${fileName}`;
+
+      const { data: fileData } = await supabase
+      .from("files")
+      .select("id")
+      .eq("fileName", fileName)
+      .single();
+
+      if (fileData){
+        return res.status(500).json({ message: `File with ${file.originalname} name already exists.` });
+      }
 
       // Upload the file to database
       const { data, error } = await supabase.storage
@@ -40,22 +51,13 @@ const FileController = {
         return res.status(500).json({ error: "Failed to upload to Supabase" });
       }
 
-      // Get public URL
-      const { fileData } = supabase.storage
-      .from("datasets")
-      .getPublicUrl(filePath);
-
-      // Analyze with Danfo.js
-      const df = await danfo.readCSV(file.path);
-      const summary = danfo.toJSON(df.describe(), { format: "row" });
-      const columns = df.columns;
-
       // Prepare metadata
       const datasetEntry = {
         fileName: `${decoded.email}_${file.originalname}`,
         fileUrl: filePath,
         email: decoded.email,
         updatedAt: new Date().toISOString(),
+        size: fileSize
       };
 
       // Commit changes to database
@@ -63,13 +65,37 @@ const FileController = {
       .from("files")
       .insert([datasetEntry]);
 
+      // Get the current user record
+      const { data: userData, error: userError } = await supabase
+      .from("users")
+      .select("totalFiles, totalFileSize")
+      .eq("email", decoded.email)
+      .single();
+
+      if (userError || !userData) {
+        console.error("User fetch error:", userError);
+        return res.status(500).json({ message: "Failed to retrieve user data." });
+      }
+
+      // Increment totalFiles
+      const newTotalFiles = (userData.totalFiles || 0) + 1;
+      const newtotalFileSize = (userData.totalFileSize || 0) + fileSize;
+
+      const { error: updateError } = await supabase
+      .from("users")
+      .update({ totalFiles: newTotalFiles, totalFileSize: newtotalFileSize })
+      .eq("email", decoded.email);
+
+      if (updateError) {
+        console.error("User update error:", updateError);
+        return res.status(500).json({ message: "Failed to update user data." });
+      }
+
       // Clean up local file
       await fs.unlink(file.path);
 
       return res.json({
         fileUrl: filePath,
-        columns,
-        summary,
       });
     } catch (err) {
       console.error("Upload error:", err);

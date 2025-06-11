@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import { Search, Trash2, Download, ChartSpline } from "lucide-react";
+import { Search, Trash2, Download, ChartSpline, RefreshCcw, File, Folder } from "lucide-react";
 import axiosInstance from "../api/axios.ts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 
-// Define the File interface based on the provided data structure
 interface File {
 	id: number;
 	created_at: string;
@@ -23,38 +22,40 @@ const Files: React.FC = () => {
 	const [error, setError] = useState<string | null>(null);
 	const [searchQuery, setSearchQuery] = useState<string>("");
 
+	const fetchFiles = async () => {
+		setLoading(true);
+		setError(null);
+		const token = localStorage.getItem("token");
+
+		if (!token) {
+			setError("No authentication token found. Please log in.");
+			setLoading(false);
+			return;
+		}
+
+		try {
+			const response = await axiosInstance.get("/file/get-files", {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			});
+			const data: File[] = response.data.message;
+			setFiles(data);
+			setFilteredFiles(data);
+			console.log(data);
+		} catch (err: any) {
+			setError(err.response?.data?.message || err.message || "Failed to fetch files");
+		} finally {
+			setLoading(false);
+		}
+	};
+
+  // Initial fetch
 	useEffect(() => {
-		const fetchFiles = async () => {
-			setLoading(true);
-			setError(null);
-			const token = localStorage.getItem("token");
-
-			if (!token) {
-				setError("No authentication token found. Please log in.");
-				setLoading(false);
-				return;
-			}
-
-			try {
-				const response = await axiosInstance.get("/file/get-files", {
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-				});
-				const data: File[] = response.data.message;
-				setFiles(data);
-				setFilteredFiles(data);	
-			} catch (err: any) {
-				setError(err.response?.data?.message || err.message || "Failed to fetch files");
-			} finally {
-				setLoading(false);
-			}
-		};
-
 		fetchFiles();
 	}, []);
 
-  // Handle search filtering
+  // Filter by search query
 	useEffect(() => {
 		const filtered = files.filter((file) =>
 			file.fileName.toLowerCase().includes(searchQuery.toLowerCase())
@@ -62,7 +63,6 @@ const Files: React.FC = () => {
 		setFilteredFiles(filtered);
 	}, [searchQuery, files]);
 
-  // Format date for display
 	const formatDate = (dateString: string) => {
 		return new Date(dateString).toLocaleDateString("en-US", {
 			year: "numeric",
@@ -72,6 +72,17 @@ const Files: React.FC = () => {
 			minute: "2-digit",
 		});
 	};
+
+	const formatFileSize = (bytes: number) => {
+		if (bytes < 1024) return bytes + " B";
+		if (bytes < 1024 ** 2) return (bytes / 1024).toFixed(2) + " KB";
+		if (bytes < 1024 ** 3) return (bytes / 1024 ** 2).toFixed(2) + " MB";
+		return (bytes / 1024 ** 3).toFixed(2) + " GB";
+	};
+	const totalFileSize = formatFileSize(
+		files.reduce((sum, file) => sum + (file.size || 0), 0)
+		);
+	const totalFiles = files.length;
 
 	return (
 		<div className="min-h-screen bg-gray-50">
@@ -104,62 +115,104 @@ const Files: React.FC = () => {
 						</p>
 					</div>
 					) : (
-					<Card className="w-full">
-						<CardHeader>
-							<CardTitle>Your Files</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead>File Name</TableHead>
-										<TableHead>Uploaded At</TableHead>
-										<TableHead>Updated At</TableHead>
-										<TableHead>Actions</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{filteredFiles.map((file) => (
-										<TableRow key={file.id}>
-											<TableCell className="font-medium">{file.fileName.substr(26)}</TableCell>
-											<TableCell>{formatDate(file.created_at)}</TableCell>
-											<TableCell>{formatDate(file.updatedAt)}</TableCell>
-											<TableCell>
-												<div className="flex gap-2">
-													<Button
-														variant="outline"
-														size="sm"
-														className="hover:cursor-pointer bg-green-100 text-green-500"
-														onClick={() => window.open(file.fileUrl, "_blank")}
-													>
-														<ChartSpline className="text-green-500"/> Analyse
-													</Button>
-													<Button
-														variant="outline"
-														size="sm"
-														className="hover:cursor-pointer bg-blue-100"
-														onClick={() => window.open(file.fileUrl, "_blank")}
-													>
-														<Download className="text-primary"/>
-													</Button>
-													<Button
-														variant="outline"
-														size="sm"
-														className="hover:cursor-pointer bg-red-100"
-														onClick={() => window.open(file.fileUrl, "_blank")}
-													>
-														<Trash2 className="text-red-500" />
+					<div className="flex flex-col gap-6">
+            		{/* Card Row */}
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<Card className="shadow-md hover:shadow-lg transition-shadow duration-200">
+								<CardHeader className="pb-2">
+									<CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-700">
+										<File className="w-5 h-5 text-blue-500" />
+										Total Files
+									</CardTitle>
+								</CardHeader>
+								<CardContent>
+									<p className="text-3xl font-bold text-gray-900">{totalFiles}</p>
+								</CardContent>
+								<CardFooter className="text-sm text-gray-500">
+									Number of files uploaded
+								</CardFooter>
+							</Card>
+							<Card className="shadow-md hover:shadow-lg transition-shadow duration-200">
+								<CardHeader className="pb-2">
+									<CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-700">
+										<Folder className="w-5 h-5 text-green-500" />
+										Total File Size
+									</CardTitle>
+								</CardHeader>
+								<CardContent>
+									<p className="text-3xl font-bold text-gray-900">{totalFileSize}</p>
+								</CardContent>
+								<CardFooter className="text-sm text-gray-500">
+									Total size of all files
+								</CardFooter>
+							</Card>
+						</div>
+            		{/* File Table */}
+						<Card className="w-full">
+							<CardHeader>
+								<CardTitle className="flex justify-between items-center">
+									<p>Your Files</p>
+									<Button variant="outline" className="hover:cursor-pointer" onClick={fetchFiles}>
+										<RefreshCcw /> Refresh
+									</Button>
+								</CardTitle>
 
-													</Button>
-												</div>
-												
-											</TableCell>
+							</CardHeader>
+							<CardContent>
+								<Table>
+									<TableHeader>
+										<TableRow>
+											<TableHead>File Name</TableHead>
+											<TableHead>Uploaded At</TableHead>
+											<TableHead>Updated At</TableHead>
+											<TableHead>Size</TableHead>
+											<TableHead>Actions</TableHead>
 										</TableRow>
-										))}
-								</TableBody>
-							</Table>
-						</CardContent>
-					</Card>
+									</TableHeader>
+									<TableBody>
+										{filteredFiles.map((file) => (
+											<TableRow key={file.id}>
+												<TableCell className="font-medium">
+													{file.fileName.substring(26)}
+												</TableCell>
+												<TableCell>{formatDate(file.created_at)}</TableCell>
+												<TableCell>{formatDate(file.updatedAt)}</TableCell>
+												<TableCell>{formatFileSize(file.size)}</TableCell>
+												<TableCell>
+													<div className="flex gap-2">
+														<Button
+															variant="outline"
+															size="sm"
+															className="hover:cursor-pointer bg-green-100 text-green-500"
+															onClick={() => window.open(file.fileUrl, "_blank")}
+														>
+															<ChartSpline className="text-green-500" /> Analyse
+														</Button>
+														<Button
+															variant="outline"
+															size="sm"
+															className="hover:cursor-pointer bg-blue-100"
+															onClick={() => window.open(file.fileUrl, "_blank")}
+														>
+															<Download className="text-primary" />
+														</Button>
+														<Button
+															variant="outline"
+															size="sm"
+															className="hover:cursor-pointer bg-red-100"
+															onClick={() => window.open(file.fileUrl, "_blank")}
+														>
+															<Trash2 className="text-red-500" />
+														</Button>
+													</div>
+												</TableCell>
+											</TableRow>
+											))}
+									</TableBody>
+								</Table>
+							</CardContent>
+						</Card>
+					</div>
 					)}
 				</div>
 			</div>

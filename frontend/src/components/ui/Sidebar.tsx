@@ -15,7 +15,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import { toast } from "react-toastify";
+import { toast } from "sonner"
+
 
 interface User {
   fullName?: string;
@@ -83,13 +84,13 @@ const Sidebar = ({ user, loading }: SidebarProps) => {
       });
 
       setUploadResult(response.data);
-      toast.success("File uploaded successfully!");
+      toast("File uploaded successfully!");
       resetUploadState();
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        toast.error(error.response?.data?.message || "Failed to upload file.");
+        toast(error.response?.data?.message || "Failed to upload file.");
       } else {
-        toast.error((error as Error).message || "An error occurred during upload.");
+        toast((error as isAxiosError).message || "An error occurred during upload.");
       }
       resetUploadState();
     }
