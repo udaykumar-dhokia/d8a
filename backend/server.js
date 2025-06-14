@@ -17,7 +17,15 @@ const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
 
 // Define allowed origins
-const allowedOrigins = ["http://localhost:5173", "https://d8a.onrender.com"];
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://d8a.onrender.com",
+  "https://d8a.vercel.app/",
+  "https://d8a.vercel.app/dashboard",
+  "https://d8a.vercel.app/files",
+  "https://d8a.vercel.app/analyse",
+  "https://d8a.vercel.app/settings",
+];
 
 // Configure CORS with origin check
 const corsOptions = {
