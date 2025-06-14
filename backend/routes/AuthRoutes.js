@@ -4,6 +4,6 @@ import AuthController from "../controllers/AuthController.js";
 
 router.post("/login", AuthController.loginUser);
 router.post("/register", AuthController.registerUser);
-router.post("/check-token", AuthController.checkToken);
+router.post("/verify-token", AuthController.checkToken);
 
 export default router;

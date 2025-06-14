@@ -21,7 +21,8 @@ const MainLayout = ({ children }: MainLayoutProps) => {
 
     const verifyToken = async () => {
       try {
-        await axiosInstance.get("/auth/verify");
+        const token = localStorage.getItem("token");
+        await axiosInstance.post("/auth/verify-token", { token });
       } catch (err: any) {
         localStorage.removeItem("token");
         navigate("/login");
