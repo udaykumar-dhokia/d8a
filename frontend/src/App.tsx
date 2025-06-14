@@ -23,7 +23,7 @@ function App() {
 
           {/* Protected Routes */}
           <Route element={<ProtectedRoute />}>
-            <Route element={<MainLayout />}>
+            <Route element={<MainLayout children={undefined} />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/files" element={<Files />} />
               <Route path="/settings" element={<Dashboard />} />
