@@ -1,48 +1,43 @@
-import { Outlet } from "react-router-dom";
-import Sidebar from "../components/ui/Sidebar";
-import React, { useState, useEffect } from "react";
-import axiosInstance from "../api/axios";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import axiosInstance from "@/api/axios";
+import { toast } from "sonner";
+import Header from "@/components/ui/Header";
+import Footer from "@/components/ui/Footer";
 
-const MainLayout = () => {
-  const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
+interface MainLayoutProps {
+  children: React.ReactNode;
+}
+
+const MainLayout = ({ children }: MainLayoutProps) => {
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
 
-      if (!token) {
-        console.warn("No token found.");
-        setLoading(false);
-        return;
-      }
-
+    const verifyToken = async () => {
       try {
-        const response = await axiosInstance.get("/user/get-data", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        setUserData(response.data.message);
-      } catch (error) {
-        console.error("Error fetching user data:", error.response?.data || error.message);
-      } finally {
-        setLoading(false);
+        await axiosInstance.get("/auth/verify");
+      } catch (err: any) {
+        localStorage.removeItem("token");
+        navigate("/login");
+        toast.error(err.response?.data?.message || "Session expired. Please login again.");
       }
     };
 
-    fetchUserData();
-  }, []);
+    verifyToken();
+  }, [navigate]);
 
   return (
-   <div className="flex min-h-screen overflow-hidden">
-    <Sidebar user={userData} loading={loading} />
-    <main className="flex-1 overflow-auto bg-gray-100 h-screen">
-      <Outlet context={{ user: userData }} />
-    </main>
-  </div>
-
+    <div className="min-h-screen bg-background flex flex-col">
+      <Header />
+      <main className="flex-1">{children}</main>
+      <Footer />
+    </div>
   );
 };
 

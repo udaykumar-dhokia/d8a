@@ -38,7 +38,7 @@ const Sidebar = ({ user, loading }: SidebarProps) => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
+  const [, setUploadResult] = useState<UploadResult | null>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const menu = [

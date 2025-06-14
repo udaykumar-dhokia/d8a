@@ -8,7 +8,7 @@ import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type Row = { [key: string]: any };
-type Describe = { [column: string]: { [stat: string]: number | string } };
+// type Describe = { [column: string]: { [stat: string]: number | string } };
 type Info = {
   columns: string[];
   dtypes: string[];
@@ -20,7 +20,7 @@ const AnalyseFile = () => {
   const { fileName } = useParams();
   const [head, setHead] = useState<Row[]>([]);
   const [tail, setTail] = useState<Row[]>([]);
-  const [describe, setDescribe] = useState<Describe>({});
+  // const [describe, setDescribe] = useState<Describe>({});
   const [info, setInfo] = useState<Info | null>(null);
   const [nullCounts, setNullCounts] = useState<{ [key: string]: number }>({});
   const [loading, setLoading] = useState(true);

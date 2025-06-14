@@ -1,21 +1,19 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-	FileText, 
-	BarChart3, 
-	Upload, 
-	Clock, 
-	ArrowUpRight, 
-	ArrowDownRight,
-	FileChartLine,
+import {
+	FileText,
+	Upload,
 	Settings2,
+	BarChart3,
+	FileChartLine,
+	Clock,
+	ArrowUpRight,
 	LogOut
 } from "lucide-react";
 import axiosInstance from "@/api/axios";
+// import { toast } from "sonner";
 
 interface File {
 	id: number;

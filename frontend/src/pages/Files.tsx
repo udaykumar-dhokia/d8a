@@ -9,11 +9,10 @@ import {
   File, 
   Folder,
   Upload,
-  Filter,
   MoreVertical,
   AlertCircle
 } from "lucide-react";
-import axiosInstance from "../api/axios.ts";
+import axiosInstance from "@/api/axios";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -30,9 +29,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
@@ -137,7 +134,7 @@ const Files: React.FC = () => {
       formData.append("file", file);
       formData.append("token", token);
 
-      const response = await axiosInstance.post("/file/upload", formData, {
+      await axiosInstance.post("/file/upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

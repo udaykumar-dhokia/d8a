@@ -1,7 +1,6 @@
-import React from "react";
 import { Link } from "react-router-dom";
-import Header from "@/components/ui/Header";
-import Footer from "@/components/ui/Footer";
+import Header from "../components/ui/Header";
+import Footer from "../components/ui/Footer";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, BarChart3, FileText, LineChart, Shield } from "lucide-react";
 

@@ -7,7 +7,7 @@ const Header = () => {
 			<div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
 				<div className="flex h-16 items-center justify-between">
 					<div className="flex-1 md:flex md:items-center md:gap-12">
-						<a className="block flex items-center gap-2 text-3xl text-primary font-700" href="/">
+						<a className="block items-center gap-2 text-3xl text-primary font-700" href="/">
 							<img className="mx-auto h-12 w-auto" src={logo} alt="Analytix"/>
 							<h1 className="font-bold">d8a</h1>
 						</a>
