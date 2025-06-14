@@ -15,7 +15,10 @@ interface LoginFormData {
 	email: string;
 	password: string;
 }
-
+interface LoginResponse {
+	token: string;
+	message: string;
+}
 const Login = () => {
 	const navigate = useNavigate();
 
@@ -42,7 +45,7 @@ const Login = () => {
 		setLoading(true);
 
 		try {
-			const response = await axiosInstance.post<LoginFormData>("/auth/login", formData);
+			const response = await axiosInstance.post<LoginResponse>("/auth/login", formData);
 			localStorage.setItem("token", response.data.token);
 			toast.success(response.data.message);
 			navigate("/dashboard");

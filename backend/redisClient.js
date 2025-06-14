@@ -1,9 +1,25 @@
-import { createClient } from "redis";
+// redisClientClient.js
+import dotenv from "dotenv";
+import Redis from "ioredis";
 
-const redisClient = createClient();
+// Load env variables
+dotenv.config();
 
-redisClient.on("error", (err) => console.error("Redis Error:", err));
+// Create redisClient client
+const redisClient = new Redis({
+  host: process.env.REDIS_HOST,
+  port: parseInt(process.env.REDIS_PORT),
+  password: process.env.REDIS_PASSWORD,
+  tls: {}, // Required for Upstash (redisClients://)
+});
 
-await redisClient.connect();
+// Optional: Log connection status
+redisClient.on("connect", () => {
+  console.log("✅ redisClient connected");
+});
+
+redisClient.on("error", (err) => {
+  console.error("❌ redisClient error:", err);
+});
 
 export default redisClient;
