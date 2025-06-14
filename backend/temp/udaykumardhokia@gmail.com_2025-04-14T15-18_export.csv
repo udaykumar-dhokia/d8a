@@ -1,0 +1,6 @@
+﻿,Issue ID,First Name,Last Name,ATM ID,Email,Symptom,Photo,Description,Category,Assigned Tech,Date Created,Resolved,Notes,Date Resolved
+0,0d5ff8ed8d,Fredrick,Thompson,33562,fredrick.thompson@fakeitcompany.com,ATM wont turn on,,ATM screen is black,General Issues,Shelley Ginder,2016-10-13T18:06:00.000,true,,
+1,d9c1547599,Patsy,Sheehan,66722,patsy.sheehan@fakeitcompany.com,Card reader not working,,The ATM is not recognizing cards,General Issues,Justin Sample,2016-10-14T18:06:00.000,true,,
+2,e0cb653f42,Jon,Snow,3351,jon.snow@fakeitcompany.com,Broken keypad,,The 2 on the keypad isn't working,General Issues,Shelley Ginder,2016-10-15T18:06:00.000,true,,
+3,94803beda8,Alexander,Ramos,37490,alexander.ramos@fakeitcompany.com,Low cash supply,,"ATM dispensed 2 $10 bills, instead of 1 $20 bill",Cash Dispenser,Miles Barron,2016-10-16T18:06:00.000,true,,
+4,da18217bc3,Verna,Moore,77827,verna.moore@fakeitcompany.com,Cash dispenser jam,,Cash is stuck,Cash Dispenser,Miles Barron,2016-10-17T18:06:00.000,false,,

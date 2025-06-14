@@ -36,12 +36,13 @@ const MainLayout = () => {
   }, []);
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar user={userData} loading={loading} />
-      <main className="flex-1 bg-gray-100">
-        <Outlet context={{ user: userData }} />
-      </main>
-    </div>
+   <div className="flex min-h-screen overflow-hidden">
+    <Sidebar user={userData} loading={loading} />
+    <main className="flex-1 overflow-auto bg-gray-100 h-screen">
+      <Outlet context={{ user: userData }} />
+    </main>
+  </div>
+
   );
 };
 

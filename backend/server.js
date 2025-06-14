@@ -7,6 +7,7 @@ import supabase from "./db/connectDB.js";
 import FileRoutes from "./routes/FileRoutes.js";
 import AuthRoutes from "./routes/AuthRoutes.js";
 import UserRoutes from "./routes/UserRoutes.js";
+import AnalyseRoutes from "./routes/AnalyseRoutes.js";
 
 dotenv.config();
 
@@ -50,6 +51,7 @@ app.get("/test-supabase", async (req, res) => {
 app.use("/api/file",FileRoutes);
 app.use("/api/auth", AuthRoutes);
 app.use("/api/user", UserRoutes);
+app.use("/api/analyse", AnalyseRoutes);
 
 server.listen(PORT, ()=>{
 	console.log(`🔥Server is running at PORT ${PORT}`);

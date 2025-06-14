@@ -91,6 +91,7 @@ const FileController = {
         return res.status(500).json({ message: "Failed to update user data." });
       }
 
+
       // Clean up local file
       await fs.unlink(file.path);
 

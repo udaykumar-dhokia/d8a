@@ -1,26 +1,30 @@
-import React, {useState, useEffect} from "react";
-import {useNavigate} from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import Header from "../components/ui/Header";
 import Footer from "../components/ui/Footer";
 import logo from "../assets/logo.png";
 import axiosInstance from "../api/axios";
-import { toast } from "sonner"
-
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Loader2 } from "lucide-react";
 
 interface LoginFormData {
 	email: string;
 	password: string;
-};
+}
 
 const Login = () => {
 	const navigate = useNavigate();
 
-	useEffect(()=>{
+	useEffect(() => {
 		const token = localStorage.getItem("token");
-		if (token){
+		if (token) {
 			navigate("/dashboard");
 		}
-	}, []);
+	}, [navigate]);
 
 	const [formData, setFormData] = useState<LoginFormData>({
 		email: "",
@@ -28,79 +32,105 @@ const Login = () => {
 	});
 
 	const [loading, setLoading] = useState(false);
-	const [success, setSuccess] = useState<string | null>(null);
-	const [error, setError] = useState<string | null>(null);
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setFormData({...formData, [e.target.name]: e.target.value})
-	}
+		setFormData({ ...formData, [e.target.name]: e.target.value });
+	};
 
-	const handleSubmit = async(e: React.FormEvent) => {
+	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setLoading(true);
-		setError(null);
-		setSuccess(null);
 
 		try {
 			const response = await axiosInstance.post<LoginFormData>("/auth/login", formData);
-			setSuccess(`${response.data.message}!`);
 			localStorage.setItem("token", response.data.token);
-			toast(response.data.message);
+			toast.success(response.data.message);
 			navigate("/dashboard");
-		} catch (err: Any){
-			setError(err.response?.data?.message || err.message);
-			toast(err.response?.data?.message || err.message);
+		} catch (err: any) {
+			toast.error(err.response?.data?.message || err.message);
 		} finally {
 			setLoading(false);
 		}
-	}
+	};
 
 	return (
-		<>
-		<Header/>
-		<div class="flex min-h-full flex-col justify-center px-6 py-42 lg:px-8">
-			<div className="">
-				<div class="sm:mx-auto sm:w-full sm:max-w-sm">
-					<img class="mx-auto h-14 w-auto" src={logo} alt="Analytix"/>
-					<h2 class="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">Login to your account</h2>
-				</div>
-
-				<div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-					<form class="space-y-6" action="#" method="POST" onSubmit={handleSubmit}>
-						<div>
-							<label for="email" class="block text-sm/6 font-medium text-gray-900">Email address</label>
-							<div class="mt-2">
-								<input type="email" onChange={handleChange} name="email" id="email" autocomplete="email" required class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6"/>
-							</div>
+		<div className="min-h-screen bg-background flex flex-col">
+			<Header />
+			<main className="flex-1 flex items-center justify-center py-12">
+				<Card className="w-full max-w-md mx-4">
+					<CardHeader className="space-y-1">
+						<div className="flex justify-center">
+							<img className="h-12 w-auto" src={logo} alt="Analytix" />
 						</div>
-
-						<div>
-							<div class="flex items-center justify-between">
-								<label for="password" class="block text-sm/6 font-medium text-gray-900">Password</label>
-								<div class="text-sm">
-									<a href="#" class="font-semibold text-primary hover:text-primary">Forgot password?</a>
+						<CardTitle className="text-2xl text-center">Welcome back</CardTitle>
+						<CardDescription className="text-center">
+							Enter your credentials to access your account
+						</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<form onSubmit={handleSubmit} className="space-y-4">
+							<div className="space-y-2">
+								<Label htmlFor="email">Email</Label>
+								<Input
+									id="email"
+									name="email"
+									type="email"
+									placeholder="name@example.com"
+									value={formData.email}
+									onChange={handleChange}
+									required
+									className="w-full"
+								/>
+							</div>
+							<div className="space-y-2">
+								<div className="flex items-center justify-between">
+									<Label htmlFor="password">Password</Label>
+									<Link
+										to="/forgot-password"
+										className="text-sm text-primary hover:text-primary/90"
+									>
+										Forgot password?
+									</Link>
 								</div>
+								<Input
+									id="password"
+									name="password"
+									type="password"
+									value={formData.password}
+									onChange={handleChange}
+									required
+									className="w-full"
+								/>
 							</div>
-							<div class="mt-2">
-								<input type="password" onChange={handleChange} name="password" id="password" autocomplete="current-password" required class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6"/>
-							</div>
+							<Button
+								type="submit"
+								className="w-full"
+								disabled={loading}
+							>
+								{loading ? (
+									<>
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										Signing in...
+									</>
+								) : (
+									"Sign in"
+								)}
+							</Button>
+						</form>
+					</CardContent>
+					<CardFooter className="flex flex-col space-y-4">
+						<div className="text-sm text-muted-foreground text-center">
+							Don't have an account?{" "}
+							<Link to="/register" className="text-primary hover:text-primary/90">
+								Sign up
+							</Link>
 						</div>
-
-						<div>
-							<button type="submit" class="flex w-full justify-center rounded-md bg-primary px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"> { loading? "Logging...": "Login" }</button>
-						</div>
-					</form>
-
-					<p class="mt-10 text-center text-sm/6 text-gray-500">
-						Not a member? 
-						<a href="/register" class="font-semibold text-primary hover:text-indigo-500"> Register Now</a>
-					</p>
-				</div>
-			</div>
+					</CardFooter>
+				</Card>
+			</main>
+			<Footer />
 		</div>
-		<Footer/>
-		</>
-		)
-}
+	);
+};
 
 export default Login;
