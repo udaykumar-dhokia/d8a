@@ -103,8 +103,24 @@ const AuthController = {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       if (decoded) {
+        // Fetch user data from database
+        const { data: user, error } = await supabase
+          .from("users")
+          .select("id, fullName, email")
+          .eq("email", decoded.email)
+          .single();
+
+        if (error) {
+          console.error("Error fetching user:", error);
+          return res.status(500).json({ message: "Error fetching user data." });
+        }
+
         return res.status(200).json({
           message: true,
+          user: {
+            fullName: user.fullName,
+            email: user.email,
+          },
         });
       }
     } catch (err) {

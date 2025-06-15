@@ -10,7 +10,7 @@ const AnalyseController = {
 
     try {
       const filePath = await downloadFile(fileUrl);
-      const df = await dfd.readExcel(filePath);
+      const df = await dfd.readCSV(filePath);
 
       const head = df.head();
       const jsonData = dfd.toJSON(head, { format: "row" });
@@ -31,7 +31,7 @@ const AnalyseController = {
 
     try {
       const filePath = await downloadFile(fileUrl);
-      const df = await dfd.readExcel(filePath);
+      const df = await dfd.readCSV(filePath);
 
       const tail = df.tail();
       const jsonData = dfd.toJSON(tail, { format: "row" });
@@ -52,7 +52,7 @@ const AnalyseController = {
 
     try {
       const filePath = await downloadFile(fileUrl);
-      const df = await dfd.readExcel(filePath);
+      const df = await dfd.readCSV(filePath);
 
       const describe = df.describe();
       const jsonData = dfd.toJSON(describe, { format: "row" });
@@ -74,7 +74,7 @@ const AnalyseController = {
 
     try {
       const filePath = await downloadFile(fileUrl);
-      const df = await dfd.readExcel(filePath);
+      const df = await dfd.readCSV(filePath);
       const info = {
         columns: df.columns,
         dtypes: df.ctypes.values,
@@ -98,7 +98,7 @@ const AnalyseController = {
 
     try {
       const filePath = await downloadFile(fileUrl);
-      const df = await dfd.readExcel(filePath);
+      const df = await dfd.readCSV(filePath);
       const nullCounts = df.isNa().sum().values;
       return res.status(200).json({ message: "Success", nullCounts });
     } catch (error) {
@@ -118,7 +118,7 @@ const AnalyseController = {
 
     try {
       const filePath = await downloadFile(fileUrl);
-      const df = await dfd.readExcel(filePath);
+      const df = await dfd.readCSV(filePath);
       return res.status(200).json({ message: "Success", columns: df.columns });
     } catch (error) {
       console.error("Columns Error:", error);
@@ -134,7 +134,24 @@ const AnalyseController = {
 
     try {
       const filePath = await downloadFile(fileUrl);
-      const df = await dfd.readExcel(filePath);
+
+      // Validate file exists and has content
+      const stats = fs.statSync(filePath);
+      if (stats.size === 0) {
+        throw new Error("File is empty");
+      }
+
+      // Try to read the file with error handling
+      let df;
+      try {
+        df = await dfd.readCSV(filePath);
+      } catch (readError) {
+        throw new Error(`Failed to read CSV file: ${readError.message}`);
+      }
+
+      if (!df || df.shape[0] === 0) {
+        throw new Error("No data found in CSV file");
+      }
 
       // Calculate pagination
       const totalRows = df.shape[0];
@@ -169,9 +186,11 @@ const AnalyseController = {
       });
     } catch (error) {
       console.error("View Error:", error);
-      return res
-        .status(500)
-        .json({ message: "Error getting data", error: error.toString() });
+      return res.status(500).json({
+        message: "Error processing CSV file",
+        error: error.message,
+        details: error.toString(),
+      });
     }
   },
 };

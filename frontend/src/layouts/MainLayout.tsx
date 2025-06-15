@@ -1,32 +1,40 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, Outlet } from "react-router-dom";
 import axiosInstance from "@/api/axios";
 import { toast } from "sonner";
-import Header from "@/components/ui/Header";
-import Footer from "@/components/ui/Footer";
+import Sidebar from "@/components/ui/Sidebar";
 
-interface MainLayoutProps {
-  children: React.ReactNode;
+interface User {
+  fullName?: string;
+  email: string;
 }
 
-const MainLayout = ({ children }: MainLayoutProps) => {
+const MainLayout = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-
     const verifyToken = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
       try {
-        const token = localStorage.getItem("token");
-        await axiosInstance.post("/auth/verify-token", { token });
+        const response = await axiosInstance.post("/auth/verify-token", { token });
+        if (response.data.user) {
+          setUser(response.data.user);
+        } else {
+          throw new Error("No user data received");
+        }
       } catch (err: any) {
+        toast.error(err.response?.data?.message || "Session expired. Please login again.");
         localStorage.removeItem("token");
         navigate("/login");
-        toast.error(err.response?.data?.message || "Session expired. Please login again.");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -34,10 +42,15 @@ const MainLayout = ({ children }: MainLayoutProps) => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Header />
-      <main className="flex-1">{children}</main>
-      <Footer />
+    <div className="flex h-screen overflow-hidden">
+      <div className="flex-none">
+        <Sidebar user={user} loading={loading} />
+      </div>
+      <main className="flex-1 overflow-auto">
+        <div className="p-8">
+          <Outlet />
+        </div>
+      </main>
     </div>
   );
 };

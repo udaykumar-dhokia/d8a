@@ -73,13 +73,17 @@ const AnalyseFile = () => {
     }
   };
 
+  // Fetch data when page changes
+  useEffect(() => {
+    fetchAllData();
+  }, [currentPage, pageSize, fileName]);
+
   // Reset to first page when changing page size
   useEffect(() => {
     setCurrentPage(1);
   }, [pageSize]);
 
   useEffect(() => {
-    fetchAllData();
     const fetchData = async () => {
       if (!fileName) return;
       setLoading(true);
@@ -89,14 +93,12 @@ const AnalyseFile = () => {
         const [headRes, tailRes, infoRes, nullCountsRes] = await Promise.all([
           axiosInstance.post(`/analyse/head`, { fileUrl }),
           axiosInstance.post(`/analyse/tail`, { fileUrl }),
-          // axiosInstance.post(`/analyse/describe`, { fileUrl }),
           axiosInstance.post(`/analyse/info`, { fileUrl }),
           axiosInstance.post(`/analyse/null-counts`, { fileUrl }),
         ]);
 
         setHead(transformDanfoOutput(headRes.data.head)); 
         setTail(transformDanfoOutput(tailRes.data.tail));
-        // setDescribe(describeRes.data.describe);
         setInfo(infoRes.data.info);
         setNullCounts(nullCountsRes.data.nullCounts);
       } catch (err: any) {
@@ -115,25 +117,27 @@ const AnalyseFile = () => {
         <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="relative w-full overflow-auto" style={{ maxHeight: '400px' }}>
-          <table className="w-full border-collapse text-sm">
-            <thead className="sticky top-0 bg-background z-10">
-              <tr>
-                {Object.keys(data[0] || {}).map((key) => (
-                  <th key={key} className="border px-4 py-2 text-left font-semibold whitespace-nowrap bg-background">{key}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((row, idx) => (
-                <tr key={idx} className="hover:bg-muted/50">
-                  {Object.values(row).map((val, i) => (
-                    <td key={i} className="border px-4 py-2 whitespace-nowrap">{String(val)}</td>
+        <div className="relative w-full overflow-x-auto" style={{ maxHeight: '400px' }}>
+          <div className="min-w-full inline-block align-middle">
+            <table className="w-full border-collapse text-sm">
+              <thead className="sticky top-0 bg-background z-10">
+                <tr>
+                  {Object.keys(data[0] || {}).map((key) => (
+                    <th key={key} className="border px-4 py-2 text-left font-semibold whitespace-nowrap bg-background">{key}</th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.map((row, idx) => (
+                  <tr key={idx} className="hover:bg-muted/50">
+                    {Object.values(row).map((val, i) => (
+                      <td key={i} className="border px-4 py-2 whitespace-nowrap">{String(val)}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -174,45 +178,47 @@ const AnalyseFile = () => {
             <CardTitle>Column Information</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="relative w-full overflow-auto" style={{ maxHeight: '400px' }}>
-              <table className="w-full border-collapse text-sm">
-                <thead className="sticky top-0 bg-background z-10">
-                  <tr>
-                    <th className="border px-4 py-2 text-left font-semibold whitespace-nowrap bg-background">Column Name</th>
-                    <th className="border px-4 py-2 text-left font-semibold whitespace-nowrap bg-background">Data Type</th>
-                    <th className="border px-4 py-2 text-left font-semibold whitespace-nowrap bg-background">Null Count</th>
-                    <th className="border px-4 py-2 text-left font-semibold whitespace-nowrap bg-background">Null Percentage</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {info.columns.map((col, idx) => {
-                    const nullCount = nullCounts[col] || 0;
-                    const nullPercentage = ((nullCount / info.shape[0]) * 100).toFixed(2);
-                    return (
-                      <tr key={col} className="hover:bg-muted/50">
-                        <td className="border px-4 py-2 whitespace-nowrap font-medium">{col}</td>
-                        <td className="border px-4 py-2 whitespace-nowrap">
-                          <Badge variant="outline">{info.dtypes[idx]}</Badge>
-                        </td>
-                        <td className="border px-4 py-2 whitespace-nowrap">
-                          {nullCount > 0 ? (
-                            <Badge variant="destructive">{nullCount}</Badge>
-                          ) : (
-                            <Badge variant="secondary">0</Badge>
-                          )}
-                        </td>
-                        <td className="border px-4 py-2 whitespace-nowrap">
-                          {nullCount > 0 ? (
-                            <Badge variant="destructive">{nullPercentage}%</Badge>
-                          ) : (
-                            <Badge variant="secondary">0%</Badge>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            <div className="relative w-full overflow-x-auto" style={{ maxHeight: '400px' }}>
+              <div className="min-w-full inline-block align-middle">
+                <table className="w-full border-collapse text-sm">
+                  <thead className="sticky top-0 bg-background z-10">
+                    <tr>
+                      <th className="border px-4 py-2 text-left font-semibold whitespace-nowrap bg-background">Column Name</th>
+                      <th className="border px-4 py-2 text-left font-semibold whitespace-nowrap bg-background">Data Type</th>
+                      <th className="border px-4 py-2 text-left font-semibold whitespace-nowrap bg-background">Null Count</th>
+                      <th className="border px-4 py-2 text-left font-semibold whitespace-nowrap bg-background">Null Percentage</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {info.columns.map((col, idx) => {
+                      const nullCount = nullCounts[col] || 0;
+                      const nullPercentage = ((nullCount / info.shape[0]) * 100).toFixed(2);
+                      return (
+                        <tr key={col} className="hover:bg-muted/50">
+                          <td className="border px-4 py-2 whitespace-nowrap font-medium">{col}</td>
+                          <td className="border px-4 py-2 whitespace-nowrap">
+                            <Badge variant="outline">{info.dtypes[idx]}</Badge>
+                          </td>
+                          <td className="border px-4 py-2 whitespace-nowrap">
+                            {nullCount > 0 ? (
+                              <Badge variant="destructive">{nullCount}</Badge>
+                            ) : (
+                              <Badge variant="secondary">0</Badge>
+                            )}
+                          </td>
+                          <td className="border px-4 py-2 whitespace-nowrap">
+                            {nullCount > 0 ? (
+                              <Badge variant="destructive">{nullPercentage}%</Badge>
+                            ) : (
+                              <Badge variant="secondary">0%</Badge>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -285,25 +291,27 @@ const AnalyseFile = () => {
           </div>
         ) : (
           <>
-            <div className="relative w-full overflow-auto" style={{ maxHeight: '600px' }}>
-              <table className="w-full border-collapse text-sm">
-                <thead className="sticky top-0 bg-background z-10">
-                  <tr>
-                    {Object.keys(allData[0] || {}).map((key) => (
-                      <th key={key} className="border px-4 py-2 text-left font-semibold whitespace-nowrap bg-background">{key}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {allData.map((row, idx) => (
-                    <tr key={idx} className="hover:bg-muted/50">
-                      {Object.values(row).map((val, i) => (
-                        <td key={i} className="border px-4 py-2 whitespace-nowrap">{String(val)}</td>
+            <div className="relative w-full overflow-x-auto" style={{ maxHeight: '600px' }}>
+              <div className="min-w-full inline-block align-middle">
+                <table className="w-full border-collapse text-sm">
+                  <thead className="sticky top-0 bg-background z-10">
+                    <tr>
+                      {Object.keys(allData[0] || {}).map((key) => (
+                        <th key={key} className="border px-4 py-2 text-left font-semibold whitespace-nowrap bg-background">{key}</th>
                       ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {allData.map((row, idx) => (
+                      <tr key={idx} className="hover:bg-muted/50">
+                        {Object.values(row).map((val, i) => (
+                          <td key={i} className="border px-4 py-2 whitespace-nowrap">{String(val)}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
             {renderPagination()}
           </>
@@ -316,7 +324,7 @@ const AnalyseFile = () => {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">
-          Analysis of {decodeURIComponent(fileName!.substr(26) || "")}
+          Analysis of {decodeURIComponent(fileName || "")}
         </h1>
         {loading && (
           <div className="flex items-center gap-2">

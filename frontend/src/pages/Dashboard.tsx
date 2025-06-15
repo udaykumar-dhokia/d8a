@@ -220,7 +220,7 @@ const Dashboard = () => {
 									<div className="flex items-center gap-4">
 										<FileText className="h-8 w-8 text-primary" />
 										<div>
-											<p className="font-medium">{file.fileName.substring(26)}</p>
+											<p className="font-medium">{file.fileName}</p>
 											<p className="text-sm text-muted-foreground">
 												{formatDate(file.created_at)}
 											</p>

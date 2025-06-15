@@ -23,7 +23,7 @@ function App() {
 
           {/* Protected Routes */}
           <Route element={<ProtectedRoute />}>
-            <Route element={<MainLayout children={undefined} />}>
+            <Route element={<MainLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/files" element={<Files />} />
               <Route path="/settings" element={<Dashboard />} />
@@ -32,7 +32,7 @@ function App() {
           </Route>
         </Routes>
       </BrowserRouter>
-    <Toaster />
+      <Toaster />
 
       {/*<ToastContainer />*/}
     </>

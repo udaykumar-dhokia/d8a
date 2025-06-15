@@ -158,8 +158,6 @@ const Files: React.FC = () => {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
-      "application/vnd.ms-excel": [".xls"],
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
       "text/csv": [".csv"],
     },
     maxFiles: 1,
@@ -259,7 +257,7 @@ const Files: React.FC = () => {
               : "Drag & drop a file here, or click to select"}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Supported formats: .xlsx, .xls, .csv (max 50MB)
+            Supported format: .csv (max 50MB)
           </p>
           {isUploading && (
             <div className="mt-4">
@@ -310,7 +308,7 @@ const Files: React.FC = () => {
                     {filteredFiles.map((file) => (
                       <TableRow key={file.id}>
                         <TableCell className="font-medium">
-                          {file.fileName.substring(26)}
+                          {file.fileName}
                         </TableCell>
                         <TableCell>{formatDate(file.created_at)}</TableCell>
                         <TableCell>{formatDate(file.updatedAt)}</TableCell>
