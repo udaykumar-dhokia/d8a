@@ -33,6 +33,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
+import { formatFileName } from "@/utils/formatFileName";
 
 interface FileData {
   id: number;
@@ -308,7 +309,7 @@ const Files: React.FC = () => {
                     {filteredFiles.map((file) => (
                       <TableRow key={file.id}>
                         <TableCell className="font-medium">
-                          {file.fileName}
+                          {formatFileName(file.fileName)}
                         </TableCell>
                         <TableCell>{formatDate(file.created_at)}</TableCell>
                         <TableCell>{formatDate(file.updatedAt)}</TableCell>

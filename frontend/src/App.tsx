@@ -7,13 +7,15 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import AnalyseFile from "./pages/AnalyseFile";
 import Files from "./pages/Files";
+import Settings from "./pages/Settings";
 import MainLayout from "./layouts/MainLayout";
 import { Toaster } from "@/components/ui/sonner"
+import { ThemeProvider } from "@/components/theme-provider"
 
 
 function App() {
   return (
-    <>
+    <ThemeProvider defaultTheme="system">
       <BrowserRouter>
         <Routes>
           {/* Public Routes */}
@@ -26,7 +28,7 @@ function App() {
             <Route element={<MainLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/files" element={<Files />} />
-              <Route path="/settings" element={<Dashboard />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="/analyse/:fileName" element={<AnalyseFile />} />
             </Route>
           </Route>
@@ -35,7 +37,7 @@ function App() {
       <Toaster />
 
       {/*<ToastContainer />*/}
-    </>
+    </ThemeProvider>
   );
 }
 

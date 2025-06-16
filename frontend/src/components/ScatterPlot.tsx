@@ -24,7 +24,7 @@ const ScatterPlot = ({ fileUrl, xColumn, yColumn, title }: ScatterPlotProps) => 
           yColumn,
         });
 
-        const { points, xLabel, yLabel } = response.data.scatterPlot;
+        const { data, xColumn: xCol, yColumn: yCol, pointCount } = response.data.scatterPlot;
 
         if (chartInstance.current) {
           chartInstance.current.destroy();
@@ -37,8 +37,8 @@ const ScatterPlot = ({ fileUrl, xColumn, yColumn, title }: ScatterPlotProps) => 
               type: 'scatter',
               data: {
                 datasets: [{
-                  label: `${xColumn} vs ${yColumn}`,
-                  data: points,
+                  label: `${xCol} vs ${yCol}`,
+                  data: data,
                   backgroundColor: 'rgba(54, 162, 235, 0.5)',
                   borderColor: 'rgba(54, 162, 235, 1)',
                   borderWidth: 1,
@@ -48,29 +48,57 @@ const ScatterPlot = ({ fileUrl, xColumn, yColumn, title }: ScatterPlotProps) => 
               },
               options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                   title: {
                     display: true,
-                    text: title || `${xColumn} vs ${yColumn}`,
+                    text: title || `${xCol} vs ${yCol} (${pointCount} points)`,
+                    font: {
+                      size: 16,
+                      weight: 'bold'
+                    }
                   },
                   legend: {
                     display: false,
                   },
+                  tooltip: {
+                    callbacks: {
+                      label: function(context) {
+                        return `(${context.parsed.x.toFixed(2)}, ${context.parsed.y.toFixed(2)})`;
+                      }
+                    }
+                  }
                 },
                 scales: {
                   x: {
                     title: {
                       display: true,
-                      text: xLabel,
+                      text: xCol,
+                      font: {
+                        weight: 'bold'
+                      }
                     },
+                    grid: {
+                      color: 'rgba(0, 0, 0, 0.1)'
+                    }
                   },
                   y: {
                     title: {
                       display: true,
-                      text: yLabel,
+                      text: yCol,
+                      font: {
+                        weight: 'bold'
+                      }
                     },
+                    grid: {
+                      color: 'rgba(0, 0, 0, 0.1)'
+                    }
                   },
                 },
+                interaction: {
+                  mode: 'nearest',
+                  intersect: false
+                }
               },
             });
           }
@@ -90,7 +118,7 @@ const ScatterPlot = ({ fileUrl, xColumn, yColumn, title }: ScatterPlotProps) => 
   }, [fileUrl, xColumn, yColumn, title]);
 
   return (
-    <div className="w-full h-[400px] p-4 bg-white rounded-lg shadow">
+    <div className="w-full h-[500px] p-4 bg-white rounded-lg shadow">
       <canvas ref={chartRef} />
     </div>
   );

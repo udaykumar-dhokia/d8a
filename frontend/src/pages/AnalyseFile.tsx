@@ -7,6 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import HistogramPlot from "@/components/HistogramPlot";
+import ScatterPlot from "@/components/ScatterPlot";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { formatFileName } from "@/utils/formatFileName";
 
 type Row = { [key: string]: any };
 // type Describe = { [column: string]: { [stat: string]: number | string } };
@@ -33,6 +36,8 @@ const AnalyseFile = () => {
   const [pageSize] = useState(50);
   const [allData, setAllData] = useState<Row[]>([]);
   const [loadingData, setLoadingData] = useState(false);
+  const [selectedXColumn, setSelectedXColumn] = useState<string>("");
+  const [selectedYColumn, setSelectedYColumn] = useState<string>("");
 
   const fileUrl = `https://tciincekcqrncwqewmql.supabase.co/storage/v1/object/public/datasets/${fileName}`;
 
@@ -319,11 +324,89 @@ const AnalyseFile = () => {
     </Card>
   );
 
+  const renderScatterPlot = () => {
+    if (!info) return null;
+
+    // Filter numeric columns
+    const numericColumns = info.columns.filter((_, idx) => 
+      info.dtypes[idx] === "float32" || info.dtypes[idx] === "int32"
+    );
+
+    if (numericColumns.length < 2) {
+      return (
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-muted-foreground">Not enough numeric columns for scatter plot</p>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Scatter Plot</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="text-sm font-medium mb-2 block">X-Axis Column</label>
+                <Select
+                  value={selectedXColumn}
+                  onValueChange={setSelectedXColumn}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select X-axis column" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {numericColumns.map((col) => (
+                      <SelectItem key={col} value={col}>
+                        {col}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex-1">
+                <label className="text-sm font-medium mb-2 block">Y-Axis Column</label>
+                <Select
+                  value={selectedYColumn}
+                  onValueChange={setSelectedYColumn}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Y-axis column" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {numericColumns.map((col) => (
+                      <SelectItem key={col} value={col}>
+                        {col}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {selectedXColumn && selectedYColumn && (
+              <ScatterPlot
+                fileUrl={fileUrl}
+                xColumn={selectedXColumn}
+                yColumn={selectedYColumn}
+                title={`${selectedXColumn} vs ${selectedYColumn}`}
+              />
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">
-          Analysis of {decodeURIComponent(fileName || "")}
+          Analysis of {formatFileName(decodeURIComponent(fileName || ""))}
         </h1>
         {loading && (
           <div className="flex items-center gap-2">
@@ -347,6 +430,7 @@ const AnalyseFile = () => {
             <TabsTrigger value="head">Head</TabsTrigger>
             <TabsTrigger value="tail">Tail</TabsTrigger>
             <TabsTrigger value="histograms">Histograms</TabsTrigger>
+            <TabsTrigger value="scatter">Scatter Plot</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
@@ -391,6 +475,10 @@ const AnalyseFile = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="scatter">
+            {renderScatterPlot()}
           </TabsContent>
         </Tabs>
       )}

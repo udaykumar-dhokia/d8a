@@ -1,4 +1,4 @@
-# d8a
+<img src="./frontend/src/assets/logo.png" alt="d8a" width="100" style="border-radius: 10px;"/>
 
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)

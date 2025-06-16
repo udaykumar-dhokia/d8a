@@ -83,9 +83,11 @@ const AuthController = {
         { expiresIn: "1h" }
       );
 
-      return res
-        .status(200)
-        .json({ message: "Login successfully.", token: token });
+      return res.status(200).json({
+        message: "Login successfully.",
+        token: token,
+        themeMode: existingUser.themeMode,
+      });
     } catch (err) {
       console.error("Login error:", err);
       return res.status(500).json({ message: "Internal server error." });

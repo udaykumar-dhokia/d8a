@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Header from "../components/ui/Header";
 import Footer from "../components/ui/Footer";
@@ -9,26 +9,22 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Loader2, Mail, Lock } from "lucide-react";
+import { useTheme } from "@/components/theme-provider";
 
 interface LoginFormData {
 	email: string;
 	password: string;
 }
+
 interface LoginResponse {
-	token: string;
 	message: string;
+	token: string;
+	themeMode: boolean;
 }
 
 const Login = () => {
 	const navigate = useNavigate();
-
-	useEffect(() => {
-		const token = localStorage.getItem("token");
-		if (token) {
-			navigate("/dashboard");
-		}
-	}, [navigate]);
-
+	const { setTheme } = useTheme();
 	const [formData, setFormData] = useState<LoginFormData>({
 		email: "",
 		password: "",
@@ -47,6 +43,10 @@ const Login = () => {
 		try {
 			const response = await axiosInstance.post<LoginResponse>("/auth/login", formData);
 			localStorage.setItem("token", response.data.token);
+			
+			// Set theme based on user preference
+			setTheme(response.data.themeMode ? "dark" : "light");
+			
 			toast.success(response.data.message);
 			navigate("/dashboard");
 		} catch (err: any) {
@@ -93,23 +93,16 @@ const Login = () => {
 										</div>
 									</div>
 									<div className="space-y-2">
-										<div className="flex items-center justify-between">
-											<Label htmlFor="password" className="text-sm font-medium">
-												Password
-											</Label>
-											<Link
-												to="/forgot-password"
-												className="text-sm text-primary hover:text-primary/90"
-											>
-												Forgot password?
-											</Link>
-										</div>
+										<Label htmlFor="password" className="text-sm font-medium">
+											Password
+										</Label>
 										<div className="relative">
 											<Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 											<Input
 												id="password"
 												name="password"
 												type="password"
+												placeholder="••••••••"
 												value={formData.password}
 												onChange={handleChange}
 												required
@@ -120,7 +113,7 @@ const Login = () => {
 								</div>
 								<Button
 									type="submit"
-									className="w-full h-11"
+									className="w-full"
 									disabled={loading}
 								>
 									{loading ? (
@@ -134,11 +127,14 @@ const Login = () => {
 								</Button>
 							</form>
 						</CardContent>
-						<CardFooter className="flex flex-col space-y-4 pt-0">
-							<div className="text-sm text-muted-foreground text-center">
+						<CardFooter className="flex flex-col space-y-4">
+							<div className="text-sm text-center text-muted-foreground">
 								Don't have an account?{" "}
-								<Link to="/register" className="text-primary hover:text-primary/90 font-medium">
-									Create an account
+								<Link
+									to="/register"
+									className="text-primary hover:underline"
+								>
+									Sign up
 								</Link>
 							</div>
 						</CardFooter>

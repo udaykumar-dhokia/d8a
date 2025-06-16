@@ -1,3 +1,4 @@
+import logo from "../../assets/logo.png";
 
 const Header = () => {
 	return (
@@ -7,8 +8,8 @@ const Header = () => {
 				<div className="flex h-16 items-center justify-between">
 					<div className="flex-1 md:flex md:items-center md:gap-12">
 						<a className="block items-center gap-2 text-3xl text-primary font-700" href="/">
-							{/* <img className="mx-auto h-12 w-auto" src={logo} alt="Analytix"/> */}
-							<h1 className="font-bold">d8a</h1>
+							<img className="mx-auto h-40 w-auto" src={logo} alt="Analytix"/>
+							{/* <h1 className="font-bold">d8a</h1> */}
 						</a>
 					</div>
 

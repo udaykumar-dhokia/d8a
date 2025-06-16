@@ -7,12 +7,12 @@ import {
 	Upload,
 	Settings2,
 	BarChart3,
-	FileChartLine,
 	Clock,
 	ArrowUpRight,
 	LogOut
 } from "lucide-react";
 import axiosInstance from "@/api/axios";
+import { formatFileName } from "@/utils/formatFileName";
 // import { toast } from "sonner";
 
 interface File {
@@ -148,7 +148,7 @@ const Dashboard = () => {
 			</div>
 
 			{/* Stats Cards */}
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 				<Card>
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<CardTitle className="text-sm font-medium">Total Files</CardTitle>
@@ -170,18 +170,6 @@ const Dashboard = () => {
 						<div className="text-2xl font-bold">{formatFileSize(stats.totalSize)}</div>
 						<p className="text-xs text-muted-foreground">
 							Combined file size
-						</p>
-					</CardContent>
-				</Card>
-				<Card>
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="text-sm font-medium">Analyzed Files</CardTitle>
-						<FileChartLine className="h-4 w-4 text-muted-foreground" />
-					</CardHeader>
-					<CardContent>
-						<div className="text-2xl font-bold">{stats.analyzedFiles}</div>
-						<p className="text-xs text-muted-foreground">
-							Files with analysis
 						</p>
 					</CardContent>
 				</Card>
@@ -220,7 +208,7 @@ const Dashboard = () => {
 									<div className="flex items-center gap-4">
 										<FileText className="h-8 w-8 text-primary" />
 										<div>
-											<p className="font-medium">{file.fileName}</p>
+											<p className="font-medium">{formatFileName(file.fileName)}</p>
 											<p className="text-sm text-muted-foreground">
 												{formatDate(file.created_at)}
 											</p>

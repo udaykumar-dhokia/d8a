@@ -90,7 +90,6 @@ const AnalyseController = {
     }
   },
 
-  // Returns null counts per column
   getNullCounts: async (req, res) => {
     const { fileUrl } = req.body;
     if (!fileUrl)
@@ -110,7 +109,6 @@ const AnalyseController = {
     }
   },
 
-  // Returns list of column names
   getColumns: async (req, res) => {
     const { fileUrl } = req.body;
     if (!fileUrl)
@@ -139,26 +137,22 @@ const AnalyseController = {
       const filePath = await downloadFile(fileUrl);
       const df = await dfd.readCSV(filePath);
 
-      // Check if column exists
       if (!df.columns.includes(column)) {
         return res.status(400).json({ message: "Column not found" });
       }
 
-      // Get column data and filter out null values
       const columnData = df[column].values.filter(
         (val) => val !== null && !isNaN(val)
       );
 
-      // Calculate histogram bins
       const min = Math.min(...columnData);
       const max = Math.max(...columnData);
-      const binCount = 10; // Number of bins
+      const binCount = 10;
       const binSize = (max - min) / binCount;
 
       const bins = Array(binCount).fill(0);
       const labels = [];
 
-      // Create bin labels
       for (let i = 0; i < binCount; i++) {
         const binStart = min + i * binSize;
         const binEnd = binStart + binSize;
@@ -256,6 +250,62 @@ const AnalyseController = {
         message: "Error processing CSV file",
         error: error.message,
         details: error.toString(),
+      });
+    }
+  },
+
+  getScatterPlot: async (req, res) => {
+    const { fileUrl, xColumn, yColumn } = req.body;
+    if (!fileUrl || !xColumn || !yColumn) {
+      return res.status(400).json({
+        message: "fileUrl, xColumn, and yColumn are required",
+      });
+    }
+
+    try {
+      const filePath = await downloadFile(fileUrl);
+      const df = await dfd.readCSV(filePath);
+
+      // Validate columns exist
+      if (!df.columns.includes(xColumn) || !df.columns.includes(yColumn)) {
+        return res.status(400).json({
+          message: "One or both columns not found in the dataset",
+        });
+      }
+
+      // Get data points, filtering out null/NaN values
+      const xValues = df[xColumn].values;
+      const yValues = df[yColumn].values;
+
+      const scatterData = [];
+      for (let i = 0; i < xValues.length; i++) {
+        if (
+          xValues[i] !== null &&
+          yValues[i] !== null &&
+          !isNaN(xValues[i]) &&
+          !isNaN(yValues[i])
+        ) {
+          scatterData.push({
+            x: xValues[i],
+            y: yValues[i],
+          });
+        }
+      }
+
+      return res.status(200).json({
+        message: "Success",
+        scatterPlot: {
+          data: scatterData,
+          xColumn,
+          yColumn,
+          pointCount: scatterData.length,
+        },
+      });
+    } catch (error) {
+      console.error("ScatterPlot Error:", error);
+      return res.status(500).json({
+        message: "Error generating scatter plot",
+        error: error.toString(),
       });
     }
   },
