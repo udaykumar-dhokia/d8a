@@ -127,6 +127,72 @@ const AnalyseController = {
         .json({ message: "Error getting columns", error: error.toString() });
     }
   },
+
+  getHistogram: async (req, res) => {
+    const { fileUrl, column } = req.body;
+    if (!fileUrl || !column)
+      return res
+        .status(400)
+        .json({ message: "fileUrl and column are required" });
+
+    try {
+      const filePath = await downloadFile(fileUrl);
+      const df = await dfd.readCSV(filePath);
+
+      // Check if column exists
+      if (!df.columns.includes(column)) {
+        return res.status(400).json({ message: "Column not found" });
+      }
+
+      // Get column data and filter out null values
+      const columnData = df[column].values.filter(
+        (val) => val !== null && !isNaN(val)
+      );
+
+      // Calculate histogram bins
+      const min = Math.min(...columnData);
+      const max = Math.max(...columnData);
+      const binCount = 10; // Number of bins
+      const binSize = (max - min) / binCount;
+
+      const bins = Array(binCount).fill(0);
+      const labels = [];
+
+      // Create bin labels
+      for (let i = 0; i < binCount; i++) {
+        const binStart = min + i * binSize;
+        const binEnd = binStart + binSize;
+        labels.push(`${binStart.toFixed(2)}-${binEnd.toFixed(2)}`);
+      }
+
+      // Count values in each bin
+      columnData.forEach((value) => {
+        const binIndex = Math.min(
+          Math.floor((value - min) / binSize),
+          binCount - 1
+        );
+        bins[binIndex]++;
+      });
+
+      return res.status(200).json({
+        message: "Success",
+        histogram: {
+          labels,
+          data: bins,
+          min,
+          max,
+          binSize,
+        },
+      });
+    } catch (error) {
+      console.error("Histogram Error:", error);
+      return res.status(500).json({
+        message: "Error generating histogram",
+        error: error.toString(),
+      });
+    }
+  },
+
   getView: async (req, res) => {
     const { fileUrl, page = 1, pageSize = 50 } = req.body;
     if (!fileUrl)

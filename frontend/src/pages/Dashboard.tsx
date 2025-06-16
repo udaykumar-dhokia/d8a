@@ -48,7 +48,7 @@ const Dashboard = () => {
 				});
 
 				const files: File[] = response.data.message;
-				setRecentFiles(files.slice(0, 5)); // Get 5 most recent files
+				setRecentFiles(files.slice(0, 5));
 
 				// Calculate stats
 				const totalSize = files.reduce((sum, file) => sum + (file.size || 0), 0);

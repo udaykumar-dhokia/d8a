@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import HistogramPlot from "@/components/HistogramPlot";
 
 type Row = { [key: string]: any };
 // type Describe = { [column: string]: { [stat: string]: number | string } };
@@ -60,7 +61,7 @@ const AnalyseFile = () => {
       // Handle empty data case
       if (Object.keys(response.data.data).length === 0) {
         setAllData([]);
-        setCurrentPage(1); // Reset to first page if no data
+        setCurrentPage(1);
       } else {
         setAllData(transformDanfoOutput(response.data.data));
       }
@@ -73,12 +74,10 @@ const AnalyseFile = () => {
     }
   };
 
-  // Fetch data when page changes
   useEffect(() => {
     fetchAllData();
   }, [currentPage, pageSize, fileName]);
 
-  // Reset to first page when changing page size
   useEffect(() => {
     setCurrentPage(1);
   }, [pageSize]);
@@ -347,6 +346,7 @@ const AnalyseFile = () => {
             <TabsTrigger value="view">View File</TabsTrigger>
             <TabsTrigger value="head">Head</TabsTrigger>
             <TabsTrigger value="tail">Tail</TabsTrigger>
+            <TabsTrigger value="histograms">Histograms</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
@@ -363,6 +363,34 @@ const AnalyseFile = () => {
 
           <TabsContent value="tail">
             {renderTable("Last 5 Rows", tail)}
+          </TabsContent>
+
+          <TabsContent value="histograms">
+            <Card>
+              <CardHeader>
+                <CardTitle>Numeric Column Distributions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {info && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {info.columns.map((col, idx) => {
+                      const type = info.dtypes[idx];
+                      if (type === "float32" || type === "int32") {
+                        return (
+                          <HistogramPlot
+                            key={col}
+                            fileUrl={fileUrl}
+                            column={col}
+                            title={`${col} Distribution`}
+                          />
+                        );
+                      }
+                      return null;
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       )}

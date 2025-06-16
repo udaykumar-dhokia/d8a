@@ -10,5 +10,6 @@ router.post("/info", AnalyseController.getInfo);
 router.post("/null-counts", AnalyseController.getNullCounts);
 router.post("/columns", AnalyseController.getColumns);
 router.post("/view", AnalyseController.getView);
+router.post("/histogram", AnalyseController.getHistogram);
 
 export default router;
