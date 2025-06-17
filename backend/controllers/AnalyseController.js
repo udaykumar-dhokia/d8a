@@ -309,6 +309,52 @@ const AnalyseController = {
       });
     }
   },
+
+  getBoxPlot: async (req, res) => {
+    const { fileUrl, column } = req.body;
+    if (!fileUrl || !column) {
+      return res.status(400).json({
+        message: "fileUrl and column are required",
+      });
+    }
+
+    try {
+      const filePath = await downloadFile(fileUrl);
+      const df = await dfd.readCSV(filePath);
+
+      // Validate column exists
+      if (!df.columns.includes(column)) {
+        return res.status(400).json({
+          message: "Column not found in the dataset",
+        });
+      }
+
+      // Get column data, filtering out null/NaN values
+      const values = df[column].values.filter(
+        (val) => val !== null && !isNaN(val)
+      );
+
+      if (values.length === 0) {
+        return res.status(400).json({
+          message: "No valid numeric data found in the column",
+        });
+      }
+
+      return res.status(200).json({
+        message: "Success",
+        boxPlot: {
+          data: values,
+          column,
+        },
+      });
+    } catch (error) {
+      console.error("BoxPlot Error:", error);
+      return res.status(500).json({
+        message: "Error generating box plot",
+        error: error.toString(),
+      });
+    }
+  },
 };
 
 export default AnalyseController;

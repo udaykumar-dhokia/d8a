@@ -3,6 +3,7 @@ import Header from "../components/ui/Header";
 import Footer from "../components/ui/Footer";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, BarChart3, FileText, LineChart, Zap, Database, Lock } from "lucide-react";
+import Hero from "../components/ui/Hero";
 
 const Landing = () => {
 	return (
@@ -10,33 +11,7 @@ const Landing = () => {
 			<Header />
 			<main className="flex-1">
 				{/* Hero Section */}
-				<section className="relative py-20 px-4 overflow-hidden">
-					<div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
-					<div className="container mx-auto max-w-6xl relative">
-						<div className="text-center space-y-8">
-							<div className="inline-block">
-								{/* <span className="text-primary font-bold text-2xl">d8a</span> */}
-							</div>
-							<h1 className="text-4xl md:text-7xl font-bold tracking-tight">
-								Your Data,{" "}
-								<span className="text-primary">Simplified</span>
-							</h1>
-							<p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-								Upload, analyze, and visualize your CSV data with our powerful analytics platform. Make data-driven decisions with confidence.
-							</p>
-							<div className="flex flex-col sm:flex-row gap-4 justify-center">
-								<Button size="lg" className="h-12 px-8" asChild>
-									<Link to="/register">
-										Get Started <ArrowRight className="ml-2 h-4 w-4" />
-									</Link>
-								</Button>
-								<Button size="lg" variant="outline" className="h-12 px-8" asChild>
-									<Link to="/login">Sign In</Link>
-								</Button>
-							</div>
-						</div>
-					</div>
-				</section>
+				<Hero />
 
 				{/* Features Section */}
 				<section className="py-20">

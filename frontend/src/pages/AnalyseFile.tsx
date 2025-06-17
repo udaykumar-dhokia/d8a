@@ -8,6 +8,7 @@ import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import HistogramPlot from "@/components/HistogramPlot";
 import ScatterPlot from "@/components/ScatterPlot";
+import BoxPlot from "@/components/BoxPlot";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatFileName } from "@/utils/formatFileName";
 
@@ -15,7 +16,7 @@ type Row = { [key: string]: any };
 // type Describe = { [column: string]: { [stat: string]: number | string } };
 type Info = {
   columns: string[];
-  dtypes: string[];
+  dtypes: string[]; 
   nullCounts: number[];
   shape: [number, number];
 };
@@ -38,6 +39,7 @@ const AnalyseFile = () => {
   const [loadingData, setLoadingData] = useState(false);
   const [selectedXColumn, setSelectedXColumn] = useState<string>("");
   const [selectedYColumn, setSelectedYColumn] = useState<string>("");
+  const [selectedBoxPlotColumn, setSelectedBoxPlotColumn] = useState<string>("");
 
   const fileUrl = `https://tciincekcqrncwqewmql.supabase.co/storage/v1/object/public/datasets/${fileName}`;
 
@@ -402,6 +404,65 @@ const AnalyseFile = () => {
     );
   };
 
+  const renderBoxPlot = () => {
+    if (!info) return null;
+
+    // Filter numeric columns
+    const numericColumns = info.columns.filter((_, idx) => 
+      info.dtypes[idx] === "float32" || info.dtypes[idx] === "int32"
+    );
+
+    if (numericColumns.length === 0) {
+      return (
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-muted-foreground">No numeric columns available for box plot</p>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Box Plot</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="text-sm font-medium mb-2 block">Select Column</label>
+                <Select
+                  value={selectedBoxPlotColumn}
+                  onValueChange={setSelectedBoxPlotColumn}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select column" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {numericColumns.map((col) => (
+                      <SelectItem key={col} value={col}>
+                        {col}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {selectedBoxPlotColumn && (
+              <BoxPlot
+                fileUrl={fileUrl}
+                column={selectedBoxPlotColumn}
+                title={`${selectedBoxPlotColumn} Distribution`}
+              />
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -431,6 +492,7 @@ const AnalyseFile = () => {
             <TabsTrigger value="tail">Tail</TabsTrigger>
             <TabsTrigger value="histograms">Histograms</TabsTrigger>
             <TabsTrigger value="scatter">Scatter Plot</TabsTrigger>
+            <TabsTrigger value="boxplot">Box Plot</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
@@ -479,6 +541,10 @@ const AnalyseFile = () => {
 
           <TabsContent value="scatter">
             {renderScatterPlot()}
+          </TabsContent>
+
+          <TabsContent value="boxplot">
+            {renderBoxPlot()}
           </TabsContent>
         </Tabs>
       )}

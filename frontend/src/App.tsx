@@ -15,29 +15,30 @@ import { ThemeProvider } from "@/components/theme-provider"
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="system">
-      <BrowserRouter>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+    <BrowserRouter>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
-          {/* Protected Routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route element={<MainLayout />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/files" element={<Files />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/analyse/:fileName" element={<AnalyseFile />} />
-            </Route>
+        {/* Protected Routes with Theme */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={
+            <ThemeProvider defaultTheme="system">
+              <MainLayout />
+            </ThemeProvider>
+          }>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/files" element={<Files />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/analyse/:fileName" element={<AnalyseFile />} />
           </Route>
-        </Routes>
-      </BrowserRouter>
+        </Route>
+      </Routes>
       <Toaster />
-
       {/*<ToastContainer />*/}
-    </ThemeProvider>
+    </BrowserRouter>
   );
 }
 
