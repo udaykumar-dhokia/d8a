@@ -34,6 +34,7 @@ const Register = () => {
 		setFormData({ ...formData, [e.target.name]: e.target.value });
 	};
 
+	// Function for handling user registration
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setLoading(true);

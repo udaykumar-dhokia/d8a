@@ -4,13 +4,22 @@ import axiosInstance from "@/api/axios";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import HistogramPlot from "@/components/HistogramPlot";
 import ScatterPlot from "@/components/ScatterPlot";
 import BoxPlot from "@/components/BoxPlot";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatFileName } from "@/utils/formatFileName";
+import { toast } from "sonner";
 
 type Row = { [key: string]: any };
 // type Describe = { [column: string]: { [stat: string]: number | string } };
@@ -30,6 +39,7 @@ const AnalyseFile = () => {
   const [nullCounts, setNullCounts] = useState<{ [key: string]: number }>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -53,6 +63,29 @@ const AnalyseFile = () => {
       });
       return row;
     });
+  };
+
+  const handleDelete = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No authentication token found.");
+      }
+
+      await axiosInstance.delete(`/file/delete/${encodeURIComponent(fileName || "")}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      toast.success("File deleted successfully");
+      // Redirect to files page
+      window.location.href = "/files";
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to delete file");
+    } finally {
+      setDeleteDialogOpen(false);
+    }
   };
 
   const fetchAllData = async () => {
@@ -469,12 +502,23 @@ const AnalyseFile = () => {
         <h1 className="text-2xl font-semibold">
           Analysis of {formatFileName(decodeURIComponent(fileName || ""))}
         </h1>
-        {loading && (
-          <div className="flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Loading...</span>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {loading && (
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Loading...</span>
+            </div>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setDeleteDialogOpen(true)}
+            className="text-destructive hover:text-destructive"
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete File
+          </Button>
+        </div>
       </div>
 
       {error ? (
@@ -548,6 +592,32 @@ const AnalyseFile = () => {
           </TabsContent>
         </Tabs>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete File</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{formatFileName(decodeURIComponent(fileName || ""))}"? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

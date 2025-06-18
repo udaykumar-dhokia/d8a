@@ -173,7 +173,7 @@ const Files: React.FC = () => {
         throw new Error("No authentication token found.");
       }
 
-      await axiosInstance.delete(`/file/delete/${file.id}`, {
+      await axiosInstance.delete(`/file/delete/${encodeURIComponent(file.fileName)}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

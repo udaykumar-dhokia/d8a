@@ -25,7 +25,6 @@ const BoxPlot = ({ fileUrl, column, title }: BoxPlotProps) => {
 
         const { data } = response.data.boxPlot;
 
-        // Calculate statistics
         const sortedData = [...data].sort((a, b) => a - b);
         const q1 = sortedData[Math.floor(sortedData.length * 0.25)];
         const median = sortedData[Math.floor(sortedData.length * 0.5)];
@@ -48,7 +47,7 @@ const BoxPlot = ({ fileUrl, column, title }: BoxPlotProps) => {
         const overallMax = Math.max(...data);
 
         // Set a larger fixed buffer for the y-axis range to ensure all points are visible
-        const buffer = 20; // Increased buffer significantly for maximum outlier visibility
+        const buffer = 20;
         const yAxisMin = overallMin - buffer;
         const yAxisMax = overallMax + buffer;
 

@@ -36,6 +36,7 @@ const Login = () => {
 		setFormData({ ...formData, [e.target.name]: e.target.value });
 	};
 
+	// Function for handling user login
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setLoading(true);
@@ -44,7 +45,6 @@ const Login = () => {
 			const response = await axiosInstance.post<LoginResponse>("/auth/login", formData);
 			localStorage.setItem("token", response.data.token);
 			
-			// Set theme based on user preference
 			setTheme(response.data.themeMode ? "dark" : "light");
 			
 			toast.success(response.data.message);

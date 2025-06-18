@@ -9,10 +9,20 @@ import {
 	BarChart3,
 	Clock,
 	ArrowUpRight,
-	LogOut
+	LogOut,
+	Trash2
 } from "lucide-react";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import axiosInstance from "@/api/axios";
 import { formatFileName } from "@/utils/formatFileName";
+import { toast } from "sonner";
 // import { toast } from "sonner";
 
 interface File {
@@ -27,6 +37,8 @@ const Dashboard = () => {
 	const [recentFiles, setRecentFiles] = useState<File[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [stats, setStats] = useState({
 		totalFiles: 0,
 		totalSize: 0,
@@ -47,18 +59,25 @@ const Dashboard = () => {
 					headers: { Authorization: `Bearer ${token}` }
 				});
 
-				const files: File[] = response.data.message;
+				const files: File[] = response.data?.message || [];
+				
+				if (!Array.isArray(files)) {
+					setError("Invalid response format from server");
+					return;
+				}
+
 				setRecentFiles(files.slice(0, 5));
 
-				// Calculate stats
-				const totalSize = files.reduce((sum, file) => sum + (file.size || 0), 0);
+				// Calculate stats with proper null checks
+				const totalSize = files.reduce((sum, file) => sum + (file?.size || 0), 0);
 				setStats({
 					totalFiles: files.length,
 					totalSize,
-					analyzedFiles: files.filter(f => f.fileName.includes("analyzed")).length,
+					analyzedFiles: files.filter(f => f?.fileName?.includes("analyzed")).length,
 					averageFileSize: files.length ? totalSize / files.length : 0
 				});
 			} catch (err: any) {
+				console.error("Dashboard fetch error:", err);
 				setError(err.response?.data?.message || "Failed to fetch dashboard data");
 			} finally {
 				setLoading(false);
@@ -72,6 +91,30 @@ const Dashboard = () => {
 		localStorage.removeItem("token");
 		navigate("/login");
 	}
+
+	const handleDelete = async (file: File) => {
+		try {
+			const token = localStorage.getItem("token");
+			if (!token) {
+				throw new Error("No authentication token found.");
+			}
+
+			await axiosInstance.delete(`/file/delete/${encodeURIComponent(file.fileName)}`, {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			});
+
+			toast.success("File deleted successfully");
+			// Refresh the dashboard data
+			window.location.reload();
+		} catch (error: any) {
+			toast.error(error.response?.data?.message || "Failed to delete file");
+		} finally {
+			setDeleteDialogOpen(false);
+			setSelectedFile(null);
+		}
+	};
 
 	const formatFileSize = (bytes: number) => {
 		if (bytes < 1024) return bytes + " B";
@@ -197,30 +240,43 @@ const Dashboard = () => {
 				</CardHeader>
 				<CardContent>
 					<div className="space-y-4">
-						{recentFiles.length === 0 ? (
+						{!recentFiles || recentFiles.length === 0 ? (
 							<p className="text-muted-foreground text-center py-4">No recent files</p>
 						) : (
 							recentFiles.map((file) => (
 								<div
-									key={file.id}
+									key={file?.id || Math.random()}
 									className="flex items-center justify-between p-4 rounded-lg border"
 								>
 									<div className="flex items-center gap-4">
 										<FileText className="h-8 w-8 text-primary" />
 										<div>
-											<p className="font-medium">{formatFileName(file.fileName)}</p>
+											<p className="font-medium">{formatFileName(file?.fileName || 'Unknown File')}</p>
 											<p className="text-sm text-muted-foreground">
-												{formatDate(file.created_at)}
+												{file?.created_at ? formatDate(file.created_at) : 'Unknown Date'}
 											</p>
 										</div>
 									</div>
-									<Button
-										variant="ghost"
-										size="sm"
-										onClick={() => navigate(`/analyse/${encodeURIComponent(file.fileName)}`)}
-									>
-										<ArrowUpRight className="h-4 w-4" />
-									</Button>
+									<div className="flex items-center gap-2">
+										<Button
+											variant="ghost"
+											size="sm"
+											onClick={() => navigate(`/analyse/${encodeURIComponent(file?.fileName || '')}`)}
+										>
+											<ArrowUpRight className="h-4 w-4" />
+										</Button>
+										<Button
+											variant="ghost"
+											size="sm"
+											onClick={() => {
+												setSelectedFile(file);
+												setDeleteDialogOpen(true);
+											}}
+											className="text-destructive hover:text-destructive"
+										>
+											<Trash2 className="h-4 w-4" />
+										</Button>
+									</div>
 								</div>
 							))
 						)}
@@ -236,6 +292,35 @@ const Dashboard = () => {
 					</Button>
 				</CardFooter>
 			</Card>
+
+			{/* Delete Confirmation Dialog */}
+			<Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Delete File</DialogTitle>
+						<DialogDescription>
+							Are you sure you want to delete "{selectedFile ? formatFileName(selectedFile.fileName) : ''}"? This action cannot be undone.
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button
+							variant="outline"
+							onClick={() => {
+								setDeleteDialogOpen(false);
+								setSelectedFile(null);
+							}}
+						>
+							Cancel
+						</Button>
+						<Button
+							variant="destructive"
+							onClick={() => selectedFile && handleDelete(selectedFile)}
+						>
+							Delete
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

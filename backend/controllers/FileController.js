@@ -39,6 +39,33 @@ const FileController = {
         return res.status(403).json({ message: "Invalid token." });
       }
 
+      // Check user's file limits before uploading
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("totalFiles, maxFiles")
+        .eq("email", decoded.email)
+        .single();
+
+      if (userError || !userData) {
+        console.error("User fetch error:", userError);
+        return res
+          .status(500)
+          .json({ message: "Failed to retrieve user data." });
+      }
+
+      // Check if user has reached their file limit
+      const currentFiles = userData.totalFiles || 0;
+      const maxFiles = userData.maxFiles || 10;
+
+      if (currentFiles >= maxFiles) {
+        return res.status(403).json({
+          message: `File upload limit reached. You can upload up to ${maxFiles} files.`,
+          limitReached: true,
+          currentFiles,
+          maxFiles,
+        });
+      }
+
       const fileBuffer = await fs.readFile(file.path);
       const fileSize = file.size;
       const fileName = `${decoded.email}_${file.originalname}`;
@@ -81,23 +108,23 @@ const FileController = {
       // Commit changes to database
       await supabase.from("files").insert([datasetEntry]);
 
-      // Get the current user record
-      const { data: userData, error: userError } = await supabase
+      // Get the current user record again for updating
+      const { data: updatedUserData, error: updatedUserError } = await supabase
         .from("users")
         .select("totalFiles, totalFileSize")
         .eq("email", decoded.email)
         .single();
 
-      if (userError || !userData) {
-        console.error("User fetch error:", userError);
+      if (updatedUserError || !updatedUserData) {
+        console.error("User fetch error:", updatedUserError);
         return res
           .status(500)
           .json({ message: "Failed to retrieve user data." });
       }
 
       // Increment totalFiles
-      const newTotalFiles = (userData.totalFiles || 0) + 1;
-      const newtotalFileSize = (userData.totalFileSize || 0) + fileSize;
+      const newTotalFiles = (updatedUserData.totalFiles || 0) + 1;
+      const newtotalFileSize = (updatedUserData.totalFileSize || 0) + fileSize;
 
       const { error: updateError } = await supabase
         .from("users")
@@ -114,6 +141,8 @@ const FileController = {
 
       return res.json({
         fileUrl: filePath,
+        currentFiles: newTotalFiles,
+        maxFiles,
       });
     } catch (err) {
       console.error("Upload error:", err);
@@ -152,6 +181,98 @@ const FileController = {
       return res.status(200).json({ message: data });
     } catch (err) {
       console.error("Fetch error:", err);
+      if (err.name == "JsonWebTokenError" || err.name == "TokenExpiredError") {
+        return res.status(401).json({ message: "Invalid or expired token" });
+      }
+      return res.status(500).json({ message: "Internal server error." });
+    }
+  },
+
+  deleteFile: async (req, res) => {
+    try {
+      const token = req.headers.authorization?.split(" ")[1];
+      const { fileName } = req.params;
+
+      if (!token) {
+        return res.status(401).json({ message: "Missing required fields." });
+      }
+
+      if (!fileName) {
+        return res.status(400).json({ message: "File name is required." });
+      }
+
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      if (!decoded) {
+        return res.status(403).json({ message: "Invalid token." });
+      }
+
+      // First, get the file details to ensure it belongs to the user
+      const { data: fileData, error: fileError } = await supabase
+        .from("files")
+        .select("*")
+        .eq("fileName", fileName)
+        .eq("email", decoded.email)
+        .single();
+
+      if (fileError || !fileData) {
+        return res
+          .status(404)
+          .json({ message: "File not found or access denied." });
+      }
+
+      // Delete file from Supabase storage
+      const { error: storageError } = await supabase.storage
+        .from("datasets")
+        .remove([fileName]);
+
+      if (storageError) {
+        console.error("Storage delete error:", storageError);
+        // Continue with database deletion even if storage deletion fails
+      }
+
+      // Delete file record from database
+      const { error: deleteError } = await supabase
+        .from("files")
+        .delete()
+        .eq("fileName", fileName)
+        .eq("email", decoded.email);
+
+      if (deleteError) {
+        console.error("Database delete error:", deleteError);
+        return res
+          .status(500)
+          .json({ message: "Failed to delete file record." });
+      }
+
+      // Update user's file count
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("totalFiles, totalFileSize")
+        .eq("email", decoded.email)
+        .single();
+
+      if (!userError && userData) {
+        const newTotalFiles = Math.max((userData.totalFiles || 0) - 1, 0);
+        const newTotalFileSize = Math.max(
+          (userData.totalFileSize || 0) - (fileData.size || 0),
+          0
+        );
+
+        await supabase
+          .from("users")
+          .update({
+            totalFiles: newTotalFiles,
+            totalFileSize: newTotalFileSize,
+          })
+          .eq("email", decoded.email);
+      }
+
+      return res.status(200).json({
+        message: "File deleted successfully.",
+        deletedFile: fileName,
+      });
+    } catch (err) {
+      console.error("Delete error:", err);
       if (err.name == "JsonWebTokenError" || err.name == "TokenExpiredError") {
         return res.status(401).json({ message: "Invalid or expired token" });
       }

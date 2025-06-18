@@ -7,6 +7,8 @@ import Sidebar from "@/components/ui/Sidebar";
 interface User {
   fullName?: string;
   email: string;
+  totalFiles?: number;
+  maxFiles?: number;
 }
 
 const MainLayout = () => {
@@ -25,7 +27,14 @@ const MainLayout = () => {
       try {
         const response = await axiosInstance.post("/auth/verify-token", { token });
         if (response.data.user) {
-          setUser(response.data.user);
+          const userDataResponse = await axiosInstance.get("/user/get-data", {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+          if (userDataResponse.data.message){
+            setUser(userDataResponse.data.message);
+          }
         } else {
           throw new Error("No user data received");
         }
