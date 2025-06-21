@@ -355,6 +355,132 @@ const AnalyseController = {
       });
     }
   },
+
+  editCsv: async (req, res) => {
+    const {
+      fileUrl,
+      editType,
+      rowIndex,
+      columnName,
+      value,
+      rowData,
+      columnData,
+      newColumnName,
+      bulkEdits,
+    } = req.body;
+    if (!fileUrl || !editType) {
+      return res
+        .status(400)
+        .json({ message: "fileUrl and editType are required" });
+    }
+    try {
+      const filePath = await downloadFile(fileUrl);
+      let df = await dfd.readCSV(filePath);
+      let changed = false;
+      switch (editType) {
+        case "cell":
+          if (rowIndex == null || !columnName)
+            return res
+              .status(400)
+              .json({ message: "rowIndex and columnName required" });
+          df.at(rowIndex, columnName, value);
+          changed = true;
+          break;
+        case "row":
+          if (rowIndex == null || !rowData)
+            return res
+              .status(400)
+              .json({ message: "rowIndex and rowData required" });
+          Object.entries(rowData).forEach(([col, val]) =>
+            df.at(rowIndex, col, val)
+          );
+          changed = true;
+          break;
+        case "column":
+          if (!columnName || !columnData)
+            return res
+              .status(400)
+              .json({ message: "columnName and columnData required" });
+          df.addColumn(columnName, columnData, { inplace: true });
+          changed = true;
+          break;
+        case "addRow":
+          if (!rowData)
+            return res.status(400).json({ message: "rowData required" });
+          df = dfd.concat({
+            dfList: [df, new dfd.DataFrame([rowData])],
+            axis: 0,
+          });
+          changed = true;
+          break;
+        case "deleteRow":
+          if (rowIndex == null)
+            return res.status(400).json({ message: "rowIndex required" });
+          df.drop({ index: [rowIndex], inplace: true });
+          changed = true;
+          break;
+        case "addColumn":
+          if (!newColumnName || !columnData)
+            return res
+              .status(400)
+              .json({ message: "newColumnName and columnData required" });
+          df.addColumn(newColumnName, columnData, { inplace: true });
+          changed = true;
+          break;
+        case "deleteColumn":
+          if (!columnName)
+            return res.status(400).json({ message: "columnName required" });
+          df.drop({ columns: [columnName], inplace: true });
+          changed = true;
+          break;
+        case "bulk":
+          if (!bulkEdits || !Array.isArray(bulkEdits))
+            return res
+              .status(400)
+              .json({ message: "bulkEdits array required" });
+          bulkEdits.forEach((edit) => {
+            if (edit.type === "cell")
+              df.at(edit.rowIndex, edit.columnName, edit.value);
+            else if (edit.type === "row")
+              Object.entries(edit.rowData).forEach(([col, val]) =>
+                df.at(edit.rowIndex, col, val)
+              );
+            else if (edit.type === "column")
+              df.addColumn(edit.columnName, edit.columnData, { inplace: true });
+          });
+          changed = true;
+          break;
+        default:
+          return res.status(400).json({ message: "Unknown editType" });
+      }
+      if (!changed) return res.status(400).json({ message: "No changes made" });
+      // Save to CSV
+      const tempOut = filePath.replace(/\.csv$/, `_edited.csv`);
+      await df.toCSV(tempOut, { index: false });
+      // Upload to Supabase (overwrite)
+      const fileName = require("path").basename(fileUrl);
+      const fileBuffer = require("fs").readFileSync(tempOut);
+      const { data, error } = await require("../db/connectDB.js")
+        .default.storage.from("datasets")
+        .upload(fileName, fileBuffer, {
+          upsert: true,
+          contentType: "text/csv",
+        });
+      if (error)
+        return res.status(500).json({
+          message: "Failed to upload edited file",
+          error: error.message,
+        });
+      return res
+        .status(200)
+        .json({ message: "CSV edited and saved successfully" });
+    } catch (error) {
+      console.error("Edit CSV Error:", error);
+      return res
+        .status(500)
+        .json({ message: "Error editing CSV", error: error.toString() });
+    }
+  },
 };
 
 export default AnalyseController;

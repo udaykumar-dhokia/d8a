@@ -13,5 +13,6 @@ router.post("/view", AnalyseController.getView);
 router.post("/histogram", AnalyseController.getHistogram);
 router.post("/scatter-plot", AnalyseController.getScatterPlot);
 router.post("/box-plot", AnalyseController.getBoxPlot);
+router.post("/edit", AnalyseController.editCsv);
 
 export default router;

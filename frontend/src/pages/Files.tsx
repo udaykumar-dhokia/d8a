@@ -1,20 +1,33 @@
 import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import { 
-  Search, 
-  Trash2, 
-  Download, 
-  ChartSpline, 
-  RefreshCcw, 
-  File, 
+import {
+  Search,
+  Trash2,
+  Download,
+  ChartSpline,
+  RefreshCcw,
+  File,
   Folder,
   Upload,
   MoreVertical,
-  AlertCircle
+  AlertCircle,
 } from "lucide-react";
 import axiosInstance from "@/api/axios";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -77,7 +90,9 @@ const Files: React.FC = () => {
       setFiles(data);
       setFilteredFiles(data);
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || "Failed to fetch files");
+      setError(
+        err.response?.data?.message || err.message || "Failed to fetch files"
+      );
       toast.error("Failed to fetch files");
     } finally {
       setLoading(false);
@@ -141,7 +156,9 @@ const Files: React.FC = () => {
         },
         onUploadProgress: (progressEvent) => {
           if (progressEvent.total) {
-            const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+            const progress = Math.round(
+              (progressEvent.loaded / progressEvent.total) * 100
+            );
             setUploadProgress(progress);
           }
         },
@@ -173,11 +190,14 @@ const Files: React.FC = () => {
         throw new Error("No authentication token found.");
       }
 
-      await axiosInstance.delete(`/file/delete/${encodeURIComponent(file.fileName)}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await axiosInstance.delete(
+        `/file/delete/${encodeURIComponent(file.fileName)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       toast.success("File deleted successfully");
       fetchFiles(); // Refresh the file list
@@ -190,7 +210,7 @@ const Files: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -248,7 +268,11 @@ const Files: React.FC = () => {
           {...getRootProps()}
           className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
             isDragActive ? "border-primary bg-primary/5" : "border-muted"
-          } ${isUploading ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:border-primary/50"}`}
+          } ${
+            isUploading
+              ? "opacity-50 cursor-not-allowed"
+              : "cursor-pointer hover:border-primary/50"
+          }`}
         >
           <input {...getInputProps()} />
           <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
@@ -290,7 +314,9 @@ const Files: React.FC = () => {
             ) : filteredFiles.length === 0 ? (
               <div className="flex justify-center items-center h-64">
                 <p className="text-muted-foreground">
-                  {searchQuery ? "No files match your search." : "No files found."}
+                  {searchQuery
+                    ? "No files match your search."
+                    : "No files found."}
                 </p>
               </div>
             ) : (
@@ -323,13 +349,21 @@ const Files: React.FC = () => {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem
-                                onClick={() => window.open(`/analyse/${encodeURIComponent(file.fileName)}`)}
+                                onClick={() =>
+                                  window.open(
+                                    `/analyse/${encodeURIComponent(
+                                      file.fileName
+                                    )}`
+                                  )
+                                }
                               >
                                 <ChartSpline className="h-4 w-4 mr-2" />
                                 Analyse
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => window.open(file.fileUrl, "_blank")}
+                                onClick={() =>
+                                  window.open(file.fileUrl, "_blank")
+                                }
                               >
                                 <Download className="h-4 w-4 mr-2" />
                                 Download
@@ -363,7 +397,8 @@ const Files: React.FC = () => {
           <DialogHeader>
             <DialogTitle>Delete File</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this file? This action cannot be undone.
+              Are you sure you want to delete this file? This action cannot be
+              undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

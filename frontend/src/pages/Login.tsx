@@ -58,7 +58,6 @@ const Login = () => {
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
-			<Header />
 			<main className="flex-1 flex items-center justify-center py-12 px-4">
 				<div className="w-full max-w-md space-y-8">
 					<div className="text-center">
@@ -141,7 +140,6 @@ const Login = () => {
 					</Card>
 				</div>
 			</main>
-			<Footer />
 		</div>
 	);
 };
