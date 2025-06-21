@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, UserPlus, UploadCloud, BarChartBig } from "lucide-react";
-import Hero from "../components/ui/Hero";
 import FeaturesSectionDemo from "@/components/features-section-demo-2";
 import Pricing from "./Pricing";
 import HeroSectionOne from "@/components/hero-section-demo-1";

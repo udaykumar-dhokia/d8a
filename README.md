@@ -10,6 +10,10 @@
 
 d8a is a modern data analytics platform that provides powerful visualization and analysis tools for your data. Built with React, TypeScript, and Vite, it offers a seamless experience for data exploration and visualization.
 
+<p align="center">
+  <img src="https://www.dropbox.com/scl/fi/55rfqr78z9cwzicrdfwk8/Screenshot-From-2025-06-22-00-48-45.png?rlkey=g5lrfs6b6yqfkoxrn4eirhc8y&st=r764s985&dl=0&raw=1" width="600">
+</p>
+
 ## Screenshots
 
 <table>
