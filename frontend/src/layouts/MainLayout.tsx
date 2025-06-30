@@ -6,6 +6,8 @@ import {
   IconLayoutDashboard,
   IconSettings,
   IconUser,
+  IconUsersGroup,
+  // IconBug,
 } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -13,6 +15,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import axiosInstance from "@/api/axios";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
+import { UserContext } from "@/context/UserContext";
 
 interface User {
   fullName?: string;
@@ -46,6 +49,11 @@ const MainLayout = () => {
       icon: <IconSettings className="h-5 w-5 shrink-0" />,
     },
     {
+      label: "Organisations",
+      href: "/organisations",
+      icon: <IconUsersGroup className="h-5 w-5 shrink-0" />,
+    },
+    {
       label: "Logout",
       href: "/login",
       icon: <IconArrowLeft className="h-5 w-5 shrink-0" />,
@@ -54,6 +62,7 @@ const MainLayout = () => {
   const [open, setOpen] = React.useState(false);
   const mainLinks = links.slice(0, links.length - 1);
   const logoutLink = links[links.length - 1];
+  // const [bugMessage, setBugMessage] = useState("");
 
   useEffect(() => {
     const verifyToken = async () => {
@@ -110,6 +119,57 @@ const MainLayout = () => {
             </div>
           </div>
           <div>
+            {/* <Dialog>
+              <form>
+                <DialogTrigger asChild>
+                  <div className="flex gap-2 hover:cursor-pointer">
+                    <IconBug stroke={2} />
+                    <p className={`${open ? "block" : "hidden"}`}>
+                      Report a bug?
+                    </p>
+                  </div>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Report a bug.</DialogTitle>
+                    <DialogDescription>
+                      We are working hard to improve performance of d8a. We will
+                      solve the issue as soon as possible.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4">
+                    <div className="grid gap-3">
+                      <Label htmlFor="name">Name</Label>
+                      <Input
+                        id="name"
+                        readOnly={true}
+                        name="name"
+                        defaultValue={user!.fullName}
+                      />
+                    </div>
+                    <div className="grid gap-3">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        readOnly={true}
+                        name="email"
+                        defaultValue={user!.email}
+                      />
+                    </div>
+                    <div className="grid gap-3">
+                      <Label htmlFor="email">Describe the bug</Label>
+                      <Textarea placeholder="Type your message here." />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button variant="outline">Cancel</Button>
+                    </DialogClose>
+                    <Button type="submit">Send</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </form>
+            </Dialog> */}
             {user && (
               <div className="my-4 flex flex-col gap-4">
                 <div className="h-px bg-neutral-200 dark:bg-neutral-700" />
@@ -169,7 +229,9 @@ const MainLayout = () => {
       </Sidebar>
       <div className="flex flex-1">
         <div className="flex h-full w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-neutral-200 bg-white p-2 md:p-10 dark:border-neutral-700 dark:bg-neutral-900 overflow-y-auto no-scrollbar">
-          <Outlet />
+          <UserContext.Provider value={user}>
+            <Outlet />
+          </UserContext.Provider>
         </div>
       </div>
     </div>
@@ -182,11 +244,10 @@ export const Logo = () => {
       href="#"
       className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black"
     >
-      <div className="h-5 w-6 shrink-0 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-black dark:bg-white" />
       <motion.span
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="font-medium whitespace-pre text-black dark:text-white"
+        className="font-medium whitespace-pre text-black text-xl dark:text-white"
       >
         d8a
       </motion.span>
@@ -199,7 +260,13 @@ export const LogoIcon = () => {
       href="#"
       className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black"
     >
-      <div className="h-5 w-6 shrink-0 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-black dark:bg-white" />
+      <motion.span
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="font-medium text-lg whitespace-pre text-black dark:text-white"
+      >
+        d8a
+      </motion.span>
     </a>
   );
 };

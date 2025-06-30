@@ -2,12 +2,12 @@ import express from "express";
 import dotenv from "dotenv";
 import http from "http";
 import cors from "cors";
-import fs from "fs/promises";
 import supabase from "./db/connectDB.js";
 import FileRoutes from "./routes/FileRoutes.js";
 import AuthRoutes from "./routes/AuthRoutes.js";
 import UserRoutes from "./routes/UserRoutes.js";
 import AnalyseRoutes from "./routes/AnalyseRoutes.js";
+import OrganisationRoutes from "./routes/OrganisationRoutes.js";
 
 dotenv.config();
 
@@ -72,6 +72,7 @@ app.use("/api/file", FileRoutes);
 app.use("/api/auth", AuthRoutes);
 app.use("/api/user", UserRoutes);
 app.use("/api/analyse", AnalyseRoutes);
+app.use("/api/org", OrganisationRoutes);
 
 // Start server
 server.listen(PORT, () => {

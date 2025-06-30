@@ -15,6 +15,7 @@ import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
 import MainLayout from "./layouts/MainLayout";
 import PublicLayout from "./layouts/PublicLayout";
+import Organisations from "./pages/Organisations";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 
@@ -52,6 +53,7 @@ function App() {
             <Route path="/files" element={<Files />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/organisations" element={<Organisations />} />
             <Route path="/analyse/:fileName" element={<AnalyseFile />} />
           </Route>
         </Route>

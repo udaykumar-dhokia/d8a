@@ -1,5 +1,7 @@
 <img src="./frontend/src/assets/logo.png" alt="d8a" width="100" style="border-radius: 10px;"/>
 
+> **Empowering data-driven decisions with beautiful, interactive analytics.**
+
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
@@ -33,36 +35,28 @@ d8a is a modern data analytics platform that provides powerful visualization and
 
 ## Features
 
-- 📊 Interactive Data Visualizations
-  - Histogram Plots for statistical analysis
-  - More visualization types coming soon
-- 🔄 Real-time Data Processing
-- 🎨 Modern, Clean UI Design
-- 📱 Responsive Design
-- 🔒 Secure Data Handling
+- 📊 **Interactive Visualizations**  
+  Histogram, Box, and Scatter Plots for deep statistical analysis
+- ⚡ **Real-time Data Processing**  
+  Fast, responsive backend with Node.js and Danfo.js
+- 🎨 **Modern, Clean UI**  
+  Responsive design with Tailwind CSS and custom components
+- 🔒 **Secure Data Handling**  
+  Authentication, protected routes, and secure file uploads
+- 🧩 **Modular Architecture**  
+  Scalable codebase with clear separation of concerns
 
 ## Tech Stack
 
-### Frontend
-
-- React.js
-- Vite
-- TypeScript
-- Chart.js
-- Tailwind CSS
-
-### Backend
-
-- Node.js
-- Express
-- Danfo.js (for data processing)
+- **Frontend:** React, Vite, TypeScript, Chart.js, Tailwind CSS
+- **Backend:** Node.js, Express, Danfo.js, Redis
+- **DevOps:** Vercel (Frontend), RESTful API, Environment-based configs
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js (v16 or higher)
-- Python 3.8+
 - npm or yarn
 
 ### Installation
@@ -70,7 +64,7 @@ d8a is a modern data analytics platform that provides powerful visualization and
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/d8a.git
+git clone https://github.com/udaykumar-dhokia/d8a.git
 cd d8a
 ```
 
@@ -92,10 +86,17 @@ npm install
 
 ```bash
 # Frontend (.env)
-VITE_API_URL=http://localhost:3000
+VITE_API_URL=http://localhost:3000/api
 
 # Backend (.env)
 PORT=3000
+SUPABASE_URL=YOUR_SUPABASE_URL
+SUPABASE_KEY=YOUR_SUPABASE_KEY
+SUPABASE_SERVICE_ROLE_KEY=YOUR_SUPABASE_ROLE_KEY
+JWT_SECRET=YOUR_JWT_SECRET
+REDIS_HOST=YOUR_REDIS_HOST
+REDIS_PORT=YOUR_REDIS_PORT
+REDIS_PASSWORD=YOUR_REDIS_PASSWORD
 ```
 
 ### Running the Application
@@ -135,19 +136,24 @@ The application will be available at `http://localhost:5173`
 ### Project Structure
 
 ```
-analytix/
+d8a/
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
 │   │   ├── api/
+│   │   ├── pages/
+│   │   ├── utils/
+│   │   ├── layouts/
+│   │   ├── context/
 │   │   └── types/
 │   └── public/
 └── backend/
     ├── src/
-    │   ├── routes/
-    │   ├── controllers/
-    │   └── services/
-    └── tests/
+        ├── routes/
+        ├── controllers/
+        ├── db/
+        ├── models/
+        ├── utils/
 ```
 
 ## Contributing
@@ -160,4 +166,8 @@ analytix/
 
 ## Support
 
-For support, email udaykumardhokia@gmail.com or open an issue in the GitHub repository.
+For questions, feedback, or opportunities, reach out at [udaykumardhokia@gmail.com](mailto:udaykumardhokia@gmail.com) or open an issue.
+
+---
+
+> _Thank you for checking out d8a! If you like this project, please consider giving it a ⭐ on GitHub._

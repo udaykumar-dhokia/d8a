@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { IconBrandGithub } from '@tabler/icons-react';
 // import logo from "../../assets/logo.png";
 
 const navItems = [
@@ -47,6 +48,15 @@ const Header = () => {
 
               <div className="flex items-center gap-4">
                 <div className="sm:flex sm:gap-4">
+                <div className="hidden sm:flex">
+                  <Link
+                    className="rounded-full hover:cursor-pointer px-5 py-2.5 text-sm font-medium text-primary"
+                    to="https://github.com/udaykumar-dhokia/d8a"
+                    target="_blank"
+                  >
+                      <IconBrandGithub stroke={2} className="text-black" />
+                  </Link>
+                </div>
                   <Link
                     className="rounded-full hover:cursor-pointer bg-primary px-5 py-2.5 text-sm font-medium text-white shadow-sm"
                     to="/login"

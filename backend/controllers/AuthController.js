@@ -38,7 +38,6 @@ const AuthController = {
       ]);
 
       if (error) {
-        console.error("Supabase insert error:", error);
         return res.status(500).json({ message: "Registration failed." });
       }
 

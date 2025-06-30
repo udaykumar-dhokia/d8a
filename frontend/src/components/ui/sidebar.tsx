@@ -182,6 +182,11 @@ export const SidebarLink = ({
       {...props}
     >
       {link.icon}
+      {/* {link.label === "Organisations" && (
+        <sup className="text-green-600">
+          <div className="h-1 w-1 bg-green-600"></div>
+        </sup>
+      )} */}
       <motion.span
         animate={{
           display: animate ? (open ? "inline-block" : "none") : "inline-block",
@@ -190,6 +195,9 @@ export const SidebarLink = ({
         className="whitespace-pre"
       >
         {link.label}
+        {link.label === "Organisations" && (
+          <sup className="text-green-600">Beta</sup>
+        )}
       </motion.span>
     </Link>
   );

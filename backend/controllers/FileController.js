@@ -145,7 +145,6 @@ const FileController = {
         maxFiles,
       });
     } catch (err) {
-      console.error("Upload error:", err);
       if (err.message === "Only CSV files are allowed") {
         return res.status(400).json({ message: err.message });
       }
@@ -180,7 +179,6 @@ const FileController = {
 
       return res.status(200).json({ message: data });
     } catch (err) {
-      console.error("Fetch error:", err);
       if (err.name == "JsonWebTokenError" || err.name == "TokenExpiredError") {
         return res.status(401).json({ message: "Invalid or expired token" });
       }
