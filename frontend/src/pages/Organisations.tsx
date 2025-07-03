@@ -332,7 +332,7 @@ const Organisations = () => {
               <div className="mt-3 flex flex-col gap-2">
                 <p className="font-medium text-sm">Members</p>
                 <div className="flex items-center">
-                  {Object.values(org.members).map((email, index) => (
+                  {Object.values(org.members).map((email, _) => (
                     <Tooltip key={email}>
                       <TooltipTrigger asChild>
                         <img
@@ -376,7 +376,7 @@ const Organisations = () => {
                     <div className="mt-3 flex flex-col gap-2">
                       <p className="font-medium text-sm">Members</p>
                       <div className="flex items-center">
-                        {Object.values(org.members).map((email, index) => (
+                        {Object.values(org.members).map((email, _) => (
                           <Tooltip key={email}>
                             <TooltipTrigger asChild>
                               <img
