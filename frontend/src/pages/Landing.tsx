@@ -5,39 +5,6 @@ import FeaturesSectionDemo from "@/components/features-section-demo-2";
 import Pricing from "./Pricing";
 import HeroSectionOne from "@/components/hero-section-demo-1";
 
-// const features = [
-// 	{
-// 		icon: <Database className="h-12 w-12 text-primary mb-4" />,
-// 		title: "CSV Analysis",
-// 		description: "Upload and analyze CSV files with our advanced processing engine. Get instant insights into your data."
-// 	},
-// 	{
-// 		icon: <BarChart3 className="h-12 w-12 text-primary mb-4" />,
-// 		title: "Data Visualization",
-// 		description: "Transform complex data into clear, interactive visualizations. Understand patterns at a glance."
-// 	},
-// 	{
-// 		icon: <LineChart className="h-12 w-12 text-primary mb-4" />,
-// 		title: "Trend Analysis",
-// 		description: "Identify patterns and trends in your data with advanced analytics. Make predictions with confidence."
-// 	},
-// 	{
-// 		icon: <Zap className="h-12 w-12 text-primary mb-4" />,
-// 		title: "Fast Processing",
-// 		description: "Lightning-fast data processing and analysis. Get results in seconds, not minutes."
-// 	},
-// 	{
-// 		icon: <FileText className="h-12 w-12 text-primary mb-4" />,
-// 		title: "File Management",
-// 		description: "Organize and manage your files efficiently. Access your data anytime, anywhere."
-// 	},
-// 	{
-// 		icon: <Lock className="h-12 w-12 text-primary mb-4" />,
-// 		title: "Secure Storage",
-// 		description: "Your data is protected with enterprise-grade security. Rest easy knowing your files are safe."
-// 	}
-// ]
-
 const Landing = () => {
   return (
     <>

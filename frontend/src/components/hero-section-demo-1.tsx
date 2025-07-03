@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import hero from "@/assets/hero.png";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function HeroSectionOne() {
   const navigator = useNavigate();
@@ -15,7 +15,14 @@ export default function HeroSectionOne() {
       {/* <div className="absolute inset-x-0 bottom-0 h-px w-full bg-neutral-200/80 dark:bg-neutral-800/80">
         <div className="absolute mx-auto h-px w-40 bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
       </div> */}
-      <div className="px-4 py-10 md:py-20">
+      <div className="relative p-2 rounded-full opacity-70 overflow-hidden">
+        <div className="absolute inset-0 animate-gradient bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 blur-sm"></div>
+        <p className="relative text-white z-10">
+          🎉 Team collaboration feature coming soon.
+        </p>
+      </div>
+
+      <div className="px-4 pb-10 pt-8 md:pb-20">
         <h1 className="relative z-10 mx-auto max-w-4xl text-center text-2xl font-bold text-primary md:text-4xl lg:text-7xl dark:text-slate-300">
           {"Your Data, Our Intelligence, Better Outcomes."
             .split(" ")
@@ -64,10 +71,15 @@ export default function HeroSectionOne() {
           }}
           className="relative z-10 mt-8 flex flex-wrap items-center justify-center gap-4"
         >
-          <button onClick={ () => {navigator("/register");}} className="w-60 transform rounded-full bg-primary px-6 py-2 font-medium text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200">
+          <button
+            onClick={() => {
+              navigator("/register");
+            }}
+            className="w-60 transform rounded-full bg-primary px-6 py-2 font-medium text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
+          >
             Explore Now
           </button>
-          <button    className="w-60 transform rounded-full border border-gray-300 bg-white px-6 py-2 font-medium text-black transition-all duration-300 hover:-translate-y-0.5 hover:bg-gray-100 dark:border-gray-700 dark:bg-black dark:text-white dark:hover:bg-gray-900">
+          <button className="w-60 transform rounded-full border border-gray-300 bg-white px-6 py-2 font-medium text-black transition-all duration-300 hover:-translate-y-0.5 hover:bg-gray-100 dark:border-gray-700 dark:bg-black dark:text-white dark:hover:bg-gray-900">
             Contact Support
           </button>
         </motion.div>

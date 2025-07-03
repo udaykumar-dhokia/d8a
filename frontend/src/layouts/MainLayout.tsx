@@ -39,6 +39,11 @@ const MainLayout = () => {
       icon: <IconFiles className="h-5 w-5 shrink-0" />,
     },
     {
+      label: "Organisations",
+      href: "/organisations",
+      icon: <IconUsersGroup className="h-5 w-5 shrink-0" />,
+    },
+    {
       label: "Profile",
       href: "/profile",
       icon: <IconUser className="h-5 w-5 shrink-0" />,
@@ -48,11 +53,7 @@ const MainLayout = () => {
       href: "/settings",
       icon: <IconSettings className="h-5 w-5 shrink-0" />,
     },
-    {
-      label: "Organisations",
-      href: "/organisations",
-      icon: <IconUsersGroup className="h-5 w-5 shrink-0" />,
-    },
+
     {
       label: "Logout",
       href: "/login",

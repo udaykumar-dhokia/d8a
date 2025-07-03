@@ -47,6 +47,7 @@ import { Progress } from "@/components/ui/progress";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 import { formatFileName } from "@/utils/formatFileName";
+import { useNavigate } from "react-router-dom";
 
 interface FileData {
   id: number;
@@ -68,6 +69,7 @@ const Files: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<FileData | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const navigator = useNavigate();
 
   const fetchFiles = async () => {
     setLoading(true);
@@ -341,6 +343,18 @@ const Files: React.FC = () => {
                         <TableCell>{formatDate(file.updatedAt)}</TableCell>
                         <TableCell>{formatFileSize(file.size || 0)}</TableCell>
                         <TableCell>
+                          <Button
+                            onClick={() => {
+                              navigator(
+                                `/analyse/${encodeURIComponent(file.fileName)}`
+                              );
+                            }}
+                            variant="outline"
+                            className="hover:cursor-pointer text-green-500 hover:bg-green-50"
+                          >
+                            <ChartSpline className="h-4 w-4 mr-2" />
+                            Analyse
+                          </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="icon">
@@ -348,18 +362,6 @@ const Files: React.FC = () => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  window.open(
-                                    `/analyse/${encodeURIComponent(
-                                      file.fileName
-                                    )}`
-                                  )
-                                }
-                              >
-                                <ChartSpline className="h-4 w-4 mr-2" />
-                                Analyse
-                              </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() =>
                                   window.open(file.fileUrl, "_blank")

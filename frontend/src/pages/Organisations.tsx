@@ -15,6 +15,11 @@ import axiosInstance from "@/api/axios";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useUser } from "@/context/UserContext";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type Organisation = {
   id: number;
@@ -45,6 +50,7 @@ const Organisations = () => {
 
   const [isCreating, setIsCreating] = useState(false);
   const [organisations, setOrganisations] = useState<Organisation[]>([]);
+  const [memberOf, setMemberOf] = useState<Organisation[]>([]);
 
   const handleDialogChange = (open: boolean) => {
     setCreateOrgDialogOpen(open);
@@ -158,6 +164,14 @@ const Organisations = () => {
           Authorization: `Bearer ${token}`,
         },
       });
+
+      const res = await axiosInstance.get("/org/fetch-memberof", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setMemberOf(res.data.message);
 
       setOrganisations(response.data.message);
     } catch (error) {
@@ -300,11 +314,12 @@ const Organisations = () => {
         </DialogContent>
       </Dialog>
 
+      <div className="mt-12 text-2xl">Your organisations</div>
       <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {organisations.map((org) => (
           <div
             key={org.id}
-            className="p-4 border rounded-md shadow-sm hover:shadow-md transition"
+            className="p-4 border rounded-lg shadow-sm hover:shadow-md transition"
           >
             <h2 className="text-xl font-semibold">{org.orgName}</h2>
             <p className="text-gray-600">@{org.orgHandle}</p>
@@ -314,17 +329,75 @@ const Organisations = () => {
             <p className="text-sm text-gray-500">Admin: {org.adminEmail}</p>
 
             {org.members && (
-              <div className="mt-3">
-                <p className="font-medium text-sm">Members:</p>
-                <ul className="list-disc ml-5 text-sm text-gray-700">
+              <div className="mt-3 flex flex-col gap-2">
+                <p className="font-medium text-sm">Members</p>
+                <div className="flex items-center">
                   {Object.values(org.members).map((email, index) => (
-                    <li key={index}>{email}</li>
+                    <Tooltip key={email}>
+                      <TooltipTrigger asChild>
+                        <img
+                          src={`https://avatar.vercel.sh/${email}`}
+                          className={`h-8 w-8 rounded-full border border-white shadow -ml-2 first:ml-0`}
+                          alt="Avatar"
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{email}</p>
+                      </TooltipContent>
+                    </Tooltip>
                   ))}
-                </ul>
+                </div>
               </div>
             )}
           </div>
         ))}
+      </div>
+
+      <div className="">
+        {memberOf.length > 0 && (
+          <>
+            <div className="mt-12 text-2xl">Shared with you</div>
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {memberOf.map((org) => (
+                <div
+                  key={org.id}
+                  className="p-4 border rounded-lg shadow-sm hover:shadow-md transition"
+                >
+                  <h2 className="text-xl font-semibold">{org.orgName}</h2>
+                  <p className="text-gray-600">@{org.orgHandle}</p>
+                  <p className="text-sm mt-2 text-gray-500">
+                    Created at: {new Date(org.created_at).toLocaleString()}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Admin: {org.adminEmail}
+                  </p>
+
+                  {org.members && (
+                    <div className="mt-3 flex flex-col gap-2">
+                      <p className="font-medium text-sm">Members</p>
+                      <div className="flex items-center">
+                        {Object.values(org.members).map((email, index) => (
+                          <Tooltip key={email}>
+                            <TooltipTrigger asChild>
+                              <img
+                                src={`https://avatar.vercel.sh/${email}`}
+                                className={`h-8 w-8 rounded-full border border-white shadow -ml-2 first:ml-0`}
+                                alt="Avatar"
+                              />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{email}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

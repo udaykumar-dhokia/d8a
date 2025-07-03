@@ -5,6 +5,52 @@ import supabase from "../db/connectDB.js";
 dotenv.config();
 
 const OrganisationController = {
+  fectMemberOrgs: async (req, res) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    const totalOrgs = [];
+
+    if (!token) {
+      return res.status(400).json({ message: "Missing required fields." });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!decoded) {
+      return res.status(403).json({ message: "Invalid token." });
+    }
+
+    try {
+      const { data: orgData, error: orgError } = await supabase
+        .from("users")
+        .select("org_member")
+        .eq("email", decoded.email)
+        .single();
+
+      if (orgError) {
+        return res
+          .status(500)
+          .json({ error: "Failed to fetch organisations." });
+      }
+
+      const orgs = orgData.org_member || [];
+
+      for (const org of orgs) {
+        const { data, error } = await supabase
+          .from("organisations")
+          .select("*")
+          .eq("id", org)
+          .single();
+
+        totalOrgs.push(data);
+      }
+
+      return res.json({ message: totalOrgs });
+    } catch (err) {
+      if (err.name == "JsonWebTokenError" || err.name == "TokenExpiredError") {
+        return res.status(401).json({ message: "Invalid or expired token." });
+      }
+      return res.status(500).json({ message: "Internal server error." });
+    }
+  },
   fetchOrgs: async (req, res) => {
     const token = req.headers.authorization?.split(" ")[1];
 
@@ -37,7 +83,7 @@ const OrganisationController = {
     }
   },
   createOrg: async (req, res) => {
-    const { token, orgName, orgHandle, members = {} } = req.body;
+    const { token, orgName, orgHandle, members = [] } = req.body;
 
     if (!token || !orgName || !orgHandle) {
       return res.status(401).json({ message: "Missing required fields." });
@@ -62,6 +108,41 @@ const OrganisationController = {
 
       if (orgError) {
         return res.status(500).json({ message: "Operation failed." });
+      }
+
+      for (const member in members) {
+        // Fetch user org data
+        const { data: userOrgData, error: userOrgError } = await supabase
+          .from("users")
+          .select("org_member")
+          .eq("email", members[member])
+          .single();
+
+        if (userOrgError) {
+          return res.status(500).json({ message: "Operation failed." });
+        }
+
+        const { data: orgData, error: orgError } = await supabase
+          .from("organisations")
+          .select("id")
+          .eq("orgHandle", orgHandle)
+          .single();
+
+        // Update user org data
+        const orgs = userOrgData.org_member || [];
+
+        if (!orgs.includes(orgData.id)) {
+          orgs.push(orgData.id);
+
+          const { error: updateError } = await supabase
+            .from("users")
+            .update({ org_member: orgs })
+            .eq("email", members[member]);
+
+          if (updateError) {
+            return res.status(500).json({ message: "Failed to update user." });
+          }
+        }
       }
 
       return res.status(200).json({
