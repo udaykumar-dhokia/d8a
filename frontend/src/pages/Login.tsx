@@ -63,21 +63,21 @@ const Login = () => {
   };
 
   // Google login handler
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: window.location.origin + "/login",
-        },
-      });
-      if (error) throw error;
-    } catch (err: any) {
-      toast.error(err.message || "Google login failed");
-      setLoading(false);
-    }
-  };
+  // const handleGoogleLogin = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const { error } = await supabase.auth.signInWithOAuth({
+  //       provider: "google",
+  //       options: {
+  //         redirectTo: window.location.origin + "/login",
+  //       },
+  //     });
+  //     if (error) throw error;
+  //   } catch (err: any) {
+  //     toast.error(err.message || "Google login failed");
+  //     setLoading(false);
+  //   }
+  // };
 
   // Handle Supabase session after redirect
   useEffect(() => {
