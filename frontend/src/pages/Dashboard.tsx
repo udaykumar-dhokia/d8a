@@ -34,6 +34,25 @@ import {
 import axiosInstance from "@/api/axios";
 import { formatFileName } from "@/utils/formatFileName";
 import { toast } from "sonner";
+import { Bar } from "react-chartjs-2";
+import {
+  Chart,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+} from "chart.js";
+import { createClient } from "@supabase/supabase-js";
+Chart.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement
+);
 
 interface File {
   id: number;
@@ -41,6 +60,10 @@ interface File {
   created_at: string;
   size: number;
 }
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -100,7 +123,8 @@ const Dashboard = () => {
     fetchData();
   }, [navigate]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     localStorage.removeItem("token");
     navigate("/login");
   };
@@ -161,6 +185,18 @@ const Dashboard = () => {
       default:
         return <FileCode className="h-8 w-8 text-primary" />;
     }
+  };
+
+  // Bar chart for recent file sizes
+  const barData = {
+    labels: recentFiles.map((f) => formatFileName(f.fileName)),
+    datasets: [
+      {
+        label: "File Size (KB)",
+        data: recentFiles.map((f) => (f.size / 1024).toFixed(2)),
+        backgroundColor: "#60a5fa",
+      },
+    ],
   };
 
   if (loading) {
@@ -367,6 +403,28 @@ const Dashboard = () => {
                 <FileText className="h-4 w-4" />
                 <span>Manage All Files</span>
               </Button>
+            </CardContent>
+          </Card>
+
+          {/* Recent File Sizes Bar Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent File Sizes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Bar
+                data={barData}
+                options={{
+                  responsive: true,
+                  plugins: { legend: { display: false } },
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                      title: { display: true, text: "KB" },
+                    },
+                  },
+                }}
+              />
             </CardContent>
           </Card>
         </div>

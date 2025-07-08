@@ -16,6 +16,7 @@ import axiosInstance from "@/api/axios";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 import { UserContext } from "@/context/UserContext";
+import { createClient } from "@supabase/supabase-js";
 
 interface User {
   fullName?: string;
@@ -63,6 +64,9 @@ const MainLayout = () => {
   const [open, setOpen] = React.useState(false);
   const mainLinks = links.slice(0, links.length - 1);
   const logoutLink = links[links.length - 1];
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
   // const [bugMessage, setBugMessage] = useState("");
 
   useEffect(() => {
@@ -100,6 +104,12 @@ const MainLayout = () => {
 
     verifyToken();
   }, [navigate]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
 
   return (
     <div
@@ -223,7 +233,7 @@ const MainLayout = () => {
             </div>
             <div className="my-4">
               <div className="h-px bg-neutral-200 dark:bg-neutral-700 mb-2" />
-              <SidebarLink link={logoutLink} />
+              <SidebarLink link={logoutLink} onClick={handleLogout} />
             </div>
           </div>
         </SidebarBody>

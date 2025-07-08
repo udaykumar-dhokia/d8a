@@ -54,7 +54,7 @@ const Register = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <main className="flex-1 flex items-center justify-center py-12 px-4">
-        <div className="w-full max-w-md space-y-8">
+        <div className="w-full max-w-md space-y-8 border rounded-lg p-4 shadow-md">
           <div className="text-center">
             <h1 className="text-4xl font-bold tracking-tight">
               {/* <span className="text-primary">d8a</span> */}
@@ -114,6 +114,7 @@ const Register = () => {
                         id="password"
                         name="password"
                         type="password"
+                        placeholder="••••••••"
                         value={formData.password}
                         onChange={handleChange}
                         required

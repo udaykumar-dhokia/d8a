@@ -3,7 +3,16 @@ import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
 import axiosInstance from "../../api/axios.ts";
-import { LayoutDashboard, FileChartLine, Settings2, CircleUser, Upload, ChevronRight, LogOut, User } from "lucide-react";
+import {
+  LayoutDashboard,
+  FileChartLine,
+  Settings2,
+  CircleUser,
+  Upload,
+  ChevronRight,
+  LogOut,
+  User,
+} from "lucide-react";
 import { Button } from "./button.tsx";
 import {
   Dialog,
@@ -17,6 +26,7 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import { createClient } from "@supabase/supabase-js";
 
 interface User {
   fullName?: string;
@@ -35,6 +45,10 @@ interface SidebarProps {
   user: User | null;
   loading: boolean;
 }
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const Sidebar = ({ user, loading }: SidebarProps) => {
   const navigate = useNavigate();
@@ -58,91 +72,121 @@ const Sidebar = ({ user, loading }: SidebarProps) => {
     setUploadResult(null);
   }, []);
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (!file) return;
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      const file = acceptedFiles[0];
+      if (!file) return;
 
-    // Check if user has reached their file limit
-    if (user && user.totalFiles && user.maxFiles && user.totalFiles >= user.maxFiles) {
-      toast.error(`File upload limit reached. You can upload up to ${user.maxFiles} files.`);
-      return;
-    }
-
-    setIsUploading(true);
-    setUploadedFile(file);
-    setUploadProgress(0);
-
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("No authentication token found.");
+      // Check if user has reached their file limit
+      if (
+        user &&
+        user.totalFiles &&
+        user.maxFiles &&
+        user.totalFiles >= user.maxFiles
+      ) {
+        toast.error(
+          `File upload limit reached. You can upload up to ${user.maxFiles} files.`
+        );
+        return;
       }
 
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("token", token);
+      setIsUploading(true);
+      setUploadedFile(file);
+      setUploadProgress(0);
 
-      const response = await axiosInstance.post("/file/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (progressEvent) => {
-          if (progressEvent.total) {
-            const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
-            setUploadProgress(progress);
-          }
-        },
-      });
-
-      setUploadResult(response.data);
-      toast.success("File uploaded successfully!");
-      resetUploadState();
-      navigate("/files");
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 403 && error.response?.data?.limitReached) {
-          toast.error(error.response.data.message);
-        } else {
-          toast.error(error.response?.data?.message || "Failed to upload file.");
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          throw new Error("No authentication token found.");
         }
-      } else {
-        toast.error((error as Error).message || "An error occurred during upload.");
+
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("token", token);
+
+        const response = await axiosInstance.post("/file/upload", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              const progress = Math.round(
+                (progressEvent.loaded / progressEvent.total) * 100
+              );
+              setUploadProgress(progress);
+            }
+          },
+        });
+
+        setUploadResult(response.data);
+        toast.success("File uploaded successfully!");
+        resetUploadState();
+        navigate("/files");
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          if (
+            error.response?.status === 403 &&
+            error.response?.data?.limitReached
+          ) {
+            toast.error(error.response.data.message);
+          } else {
+            toast.error(
+              error.response?.data?.message || "Failed to upload file."
+            );
+          }
+        } else {
+          toast.error(
+            (error as Error).message || "An error occurred during upload."
+          );
+        }
+        resetUploadState();
       }
-      resetUploadState();
-    }
-  }, [resetUploadState, navigate, user]);
-
-  const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
-    accept: {
-      "text/csv": [".csv"],
     },
-    maxFiles: 1,
-    maxSize: 50 * 1024 * 1024, // 50MB
-    onDrop,
-    disabled: user ? (user.totalFiles || 0) >= (user.maxFiles || 10) : false,
-  });
+    [resetUploadState, navigate, user]
+  );
 
-  const handleLogout = () => {
+  const { getRootProps, getInputProps, isDragActive, fileRejections } =
+    useDropzone({
+      accept: {
+        "text/csv": [".csv"],
+      },
+      maxFiles: 1,
+      maxSize: 50 * 1024 * 1024, // 50MB
+      onDrop,
+      disabled: user ? (user.totalFiles || 0) >= (user.maxFiles || 10) : false,
+    });
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     localStorage.removeItem("token");
     navigate("/login");
   };
 
   // Check if user has reached file limit
-  const hasReachedLimit = user ? (user.totalFiles || 0) >= (user.maxFiles || 10) : false;
-  const filesRemaining = user ? (user.maxFiles || 10) - (user.totalFiles || 0) : 0;
+  const hasReachedLimit = user
+    ? (user.totalFiles || 0) >= (user.maxFiles || 10)
+    : false;
+  const filesRemaining = user
+    ? (user.maxFiles || 10) - (user.totalFiles || 0)
+    : 0;
 
   return (
-    <aside className={cn(
-      "h-screen bg-background border-r transition-all duration-300",
-      isCollapsed ? "w-20" : "w-64"
-    )}>
+    <aside
+      className={cn(
+        "h-screen bg-background border-r transition-all duration-300",
+        isCollapsed ? "w-20" : "w-64"
+      )}
+    >
       <div className="flex flex-col h-full">
         {/* Logo and Toggle */}
         <div className="flex items-center justify-between p-4 border-b">
-          <a href="/" className={cn(
-            "flex items-center gap-2 text-primary font-bold transition-all duration-300",
-            isCollapsed ? "text-xl" : "text-3xl"
-          )}>
+          <a
+            href="/"
+            className={cn(
+              "flex items-center gap-2 text-primary font-bold transition-all duration-300",
+              isCollapsed ? "text-xl" : "text-3xl"
+            )}
+          >
             {!isCollapsed && <span>d8a</span>}
           </a>
           <Button
@@ -151,10 +195,12 @@ const Sidebar = ({ user, loading }: SidebarProps) => {
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="h-8 w-8"
           >
-            <ChevronRight className={cn(
-              "h-4 w-4 transition-transform duration-300",
-              !isCollapsed ? "rotate-180" : ""
-            )} />
+            <ChevronRight
+              className={cn(
+                "h-4 w-4 transition-transform duration-300",
+                !isCollapsed ? "rotate-180" : ""
+              )}
+            />
           </Button>
         </div>
 
@@ -169,28 +215,32 @@ const Sidebar = ({ user, loading }: SidebarProps) => {
             }}
           >
             <DialogTrigger asChild>
-              <Button 
+              <Button
                 className={cn(
                   "w-full py-6 text-md transition-all duration-200",
-                  hasReachedLimit 
-                    ? "bg-muted text-muted-foreground cursor-not-allowed" 
+                  hasReachedLimit
+                    ? "bg-muted text-muted-foreground cursor-not-allowed"
                     : "bg-primary hover:bg-primary/90",
                   isCollapsed ? "px-2" : "px-4"
                 )}
                 disabled={hasReachedLimit}
               >
                 <Upload className={cn("h-5 w-5", !isCollapsed && "mr-2")} />
-                {!isCollapsed && (hasReachedLimit ? "Limit Reached" : "Upload File")}
+                {!isCollapsed &&
+                  (hasReachedLimit ? "Limit Reached" : "Upload File")}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px]">
               <DialogHeader>
                 <DialogTitle>Upload CSV File</DialogTitle>
                 <DialogDescription>
-                  {hasReachedLimit 
-                    ? `You have reached your upload limit of ${user?.maxFiles || 10} files.`
-                    : `Upload CSV files (.csv) up to 50MB. ${filesRemaining} file${filesRemaining !== 1 ? 's' : ''} remaining.`
-                  }
+                  {hasReachedLimit
+                    ? `You have reached your upload limit of ${
+                        user?.maxFiles || 10
+                      } files.`
+                    : `Upload CSV files (.csv) up to 50MB. ${filesRemaining} file${
+                        filesRemaining !== 1 ? "s" : ""
+                      } remaining.`}
                 </DialogDescription>
               </DialogHeader>
               {hasReachedLimit ? (
@@ -200,7 +250,8 @@ const Sidebar = ({ user, loading }: SidebarProps) => {
                     <p className="font-medium">Upload Limit Reached</p>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    You have reached your maximum file upload limit. Please delete some files to upload new ones.
+                    You have reached your maximum file upload limit. Please
+                    delete some files to upload new ones.
                   </p>
                 </div>
               ) : (
@@ -208,8 +259,12 @@ const Sidebar = ({ user, loading }: SidebarProps) => {
                   {...getRootProps()}
                   className={cn(
                     "border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200",
-                    isDragActive ? "border-primary bg-primary/10" : "border-muted-foreground/25",
-                    isUploading ? "opacity-50 cursor-not-allowed" : "hover:border-primary/50"
+                    isDragActive
+                      ? "border-primary bg-primary/10"
+                      : "border-muted-foreground/25",
+                    isUploading
+                      ? "opacity-50 cursor-not-allowed"
+                      : "hover:border-primary/50"
                   )}
                 >
                   <input {...getInputProps()} />
@@ -308,18 +363,24 @@ const Sidebar = ({ user, loading }: SidebarProps) => {
                 </span>
               </div>
               <div className="mt-2 w-full bg-muted rounded-full h-2">
-                <div 
+                <div
                   className="bg-primary h-2 rounded-full transition-all duration-300"
-                  style={{ 
-                    width: `${Math.min(((user.totalFiles || 0) / (user.maxFiles || 10)) * 100, 100)}%` 
+                  style={{
+                    width: `${Math.min(
+                      ((user.totalFiles || 0) / (user.maxFiles || 10)) * 100,
+                      100
+                    )}%`,
                   }}
                 />
               </div>
               {hasReachedLimit ? (
-                <p className="text-xs text-destructive mt-1">Upload limit reached</p>
+                <p className="text-xs text-destructive mt-1">
+                  Upload limit reached
+                </p>
               ) : (
                 <p className="text-xs text-muted-foreground mt-1">
-                  {filesRemaining} file{filesRemaining !== 1 ? 's' : ''} remaining
+                  {filesRemaining} file{filesRemaining !== 1 ? "s" : ""}{" "}
+                  remaining
                 </p>
               )}
             </div>
@@ -328,11 +389,13 @@ const Sidebar = ({ user, loading }: SidebarProps) => {
           {loading ? (
             <div className="flex items-center gap-3 px-3 py-2">
               <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
-              {!isCollapsed && <div className="h-4 w-24 bg-muted rounded animate-pulse" />}
+              {!isCollapsed && (
+                <div className="h-4 w-24 bg-muted rounded animate-pulse" />
+              )}
             </div>
           ) : user ? (
             <>
-              <div 
+              <div
                 className={cn(
                   "flex flex-col gap-2 p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted/70 transition-colors",
                   isCollapsed && "items-center"
@@ -345,8 +408,12 @@ const Sidebar = ({ user, loading }: SidebarProps) => {
                   </div>
                   {!isCollapsed && (
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{user.fullName || "User"}</p>
-                      <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                      <p className="text-sm font-medium truncate">
+                        {user.fullName || "User"}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {user.email}
+                      </p>
                     </div>
                   )}
                 </div>

@@ -2,6 +2,7 @@ import supabase from "../db/connectDB.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import axios from "axios";
 
 dotenv.config();
 
@@ -133,6 +134,62 @@ const AuthController = {
       }
     }
     return res.status(500).json({ message: "Internal server error." });
+  },
+
+  googleAuth: async (req, res) => {
+    try {
+      const { access_token } = req.body;
+      if (!access_token) {
+        return res.status(400).json({ message: "Missing access token." });
+      }
+
+      // Fetch user info from Supabase Auth API
+      const supabaseUrl = process.env.SUPABASE_URL;
+      const { data: userInfo } = await axios.get(
+        `${supabaseUrl}/auth/v1/user`,
+        {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+            apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+          },
+        }
+      );
+
+      const { email, user_metadata } = userInfo;
+      const fullName = user_metadata?.full_name || "";
+
+      // Check if user already exists
+      const { data: existingUser } = await supabase
+        .from("users")
+        .select("id")
+        .eq("email", email)
+        .single();
+
+      if (!existingUser) {
+        const { error } = await supabase.from("users").insert([
+          {
+            fullName,
+            email,
+            password: null,
+          },
+        ]);
+        if (error) {
+          return res.status(500).json({ message: "Registration failed." });
+        }
+      }
+
+      const token = jwt.sign({ email }, process.env.JWT_SECRET, {
+        expiresIn: "1h",
+      });
+
+      return res.status(200).json({
+        message: "Google login successful.",
+        token,
+      });
+    } catch (err) {
+      console.error("Google Auth error:", err);
+      return res.status(500).json({ message: "Internal server error." });
+    }
   },
 };
 

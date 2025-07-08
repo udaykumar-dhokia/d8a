@@ -26,9 +26,11 @@ function App() {
         {/* Public Routes */}
         <Route
           element={
-            <PublicLayout>
-              <Outlet />
-            </PublicLayout>
+            <ThemeProvider defaultTheme="light">
+              <PublicLayout>
+                <Outlet />
+              </PublicLayout>
+            </ThemeProvider>
           }
         >
           <Route path="/" element={<Landing />} />

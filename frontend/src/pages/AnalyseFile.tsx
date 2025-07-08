@@ -7,27 +7,46 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import HistogramPlot from "@/components/HistogramPlot";
 import ScatterPlot from "@/components/ScatterPlot";
 import BoxPlot from "@/components/BoxPlot";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { formatFileName } from "@/utils/formatFileName";
 import { toast } from "sonner";
 
 type Row = { [key: string]: any };
-// type Describe = { [column: string]: { [stat: string]: number | string } };
 type Info = {
   columns: string[];
-  dtypes: string[]; 
+  dtypes: string[];
   nullCounts: number[];
   shape: [number, number];
+};
+
+const tabDescriptions: Record<string, string> = {
+  overview:
+    "This section provides a summary of your dataset, including its shape, column types, and missing values.",
+  view: "Browse the entire dataset in a paginated table.",
+  head: "View the first few rows of your dataset for a quick preview.",
+  tail: "View the last few rows of your dataset.",
+  histograms:
+    "Histograms show the distribution of numeric columns, helping you understand the spread and frequency of values.",
+  scatter:
+    "Scatter plots visualize the relationship between two numeric variables, revealing trends, clusters, or correlations.",
+  boxplot:
+    "Box plots summarize the distribution of a numeric column, highlighting the median, quartiles, and potential outliers.",
 };
 
 const AnalyseFile = () => {
@@ -40,7 +59,7 @@ const AnalyseFile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -49,7 +68,10 @@ const AnalyseFile = () => {
   const [loadingData, setLoadingData] = useState(false);
   const [selectedXColumn, setSelectedXColumn] = useState<string>("");
   const [selectedYColumn, setSelectedYColumn] = useState<string>("");
-  const [selectedBoxPlotColumn, setSelectedBoxPlotColumn] = useState<string>("");
+  const [selectedBoxPlotColumn, setSelectedBoxPlotColumn] =
+    useState<string>("");
+
+  const [_, setActiveTab] = useState("overview");
 
   const fileUrl = `https://tciincekcqrncwqewmql.supabase.co/storage/v1/object/public/datasets/${fileName}`;
 
@@ -72,11 +94,14 @@ const AnalyseFile = () => {
         throw new Error("No authentication token found.");
       }
 
-      await axiosInstance.delete(`/file/delete/${encodeURIComponent(fileName || "")}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await axiosInstance.delete(
+        `/file/delete/${encodeURIComponent(fileName || "")}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       toast.success("File deleted successfully");
       // Redirect to files page
@@ -92,12 +117,12 @@ const AnalyseFile = () => {
     if (!fileName) return;
     setLoadingData(true);
     try {
-      const response = await axiosInstance.post(`/analyse/view`, { 
+      const response = await axiosInstance.post(`/analyse/view`, {
         fileUrl,
         page: currentPage,
-        pageSize 
+        pageSize,
       });
-      
+
       // Handle empty data case
       if (Object.keys(response.data.data).length === 0) {
         setAllData([]);
@@ -105,7 +130,7 @@ const AnalyseFile = () => {
       } else {
         setAllData(transformDanfoOutput(response.data.data));
       }
-      
+
       setTotalPages(Math.ceil(response.data.total / pageSize));
     } catch (err: any) {
       setError(err.response?.data?.message || "Error loading data");
@@ -136,7 +161,7 @@ const AnalyseFile = () => {
           axiosInstance.post(`/analyse/null-counts`, { fileUrl }),
         ]);
 
-        setHead(transformDanfoOutput(headRes.data.head)); 
+        setHead(transformDanfoOutput(headRes.data.head));
         setTail(transformDanfoOutput(tailRes.data.tail));
         setInfo(infoRes.data.info);
         setNullCounts(nullCountsRes.data.nullCounts);
@@ -156,13 +181,21 @@ const AnalyseFile = () => {
         <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="relative w-full overflow-x-auto" style={{ maxHeight: '400px' }}>
+        <div
+          className="relative w-full overflow-x-auto"
+          style={{ maxHeight: "400px" }}
+        >
           <div className="min-w-full inline-block align-middle">
             <table className="w-full border-collapse text-sm">
               <thead className="sticky top-0 bg-background z-10">
                 <tr>
                   {Object.keys(data[0] || {}).map((key) => (
-                    <th key={key} className="border px-4 py-2 text-left font-semibold whitespace-nowrap bg-background">{key}</th>
+                    <th
+                      key={key}
+                      className="border px-4 py-2 text-left font-semibold whitespace-nowrap bg-background"
+                    >
+                      {key}
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -170,7 +203,12 @@ const AnalyseFile = () => {
                 {data.map((row, idx) => (
                   <tr key={idx} className="hover:bg-muted/50">
                     {Object.values(row).map((val, i) => (
-                      <td key={i} className="border px-4 py-2 whitespace-nowrap">{String(val)}</td>
+                      <td
+                        key={i}
+                        className="border px-4 py-2 whitespace-nowrap"
+                      >
+                        {String(val)}
+                      </td>
                     ))}
                   </tr>
                 ))}
@@ -181,7 +219,6 @@ const AnalyseFile = () => {
       </CardContent>
     </Card>
   );
-
 
   const renderInfo = () => {
     if (!info) return null;
@@ -201,7 +238,9 @@ const AnalyseFile = () => {
                 </div>
               </div>
               <div className="space-y-2">
-                <h3 className="font-semibold text-muted-foreground">Total Null Values</h3>
+                <h3 className="font-semibold text-muted-foreground">
+                  Total Null Values
+                </h3>
                 <div className="flex items-center gap-2">
                   <Badge variant="outline">
                     {Object.values(nullCounts).reduce((a, b) => a + b, 0)} nulls
@@ -217,24 +256,40 @@ const AnalyseFile = () => {
             <CardTitle>Column Information</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="relative w-full overflow-x-auto" style={{ maxHeight: '400px' }}>
+            <div
+              className="relative w-full overflow-x-auto"
+              style={{ maxHeight: "400px" }}
+            >
               <div className="min-w-full inline-block align-middle">
                 <table className="w-full border-collapse text-sm">
                   <thead className="sticky top-0 bg-background z-10">
                     <tr>
-                      <th className="border px-4 py-2 text-left font-semibold whitespace-nowrap bg-background">Column Name</th>
-                      <th className="border px-4 py-2 text-left font-semibold whitespace-nowrap bg-background">Data Type</th>
-                      <th className="border px-4 py-2 text-left font-semibold whitespace-nowrap bg-background">Null Count</th>
-                      <th className="border px-4 py-2 text-left font-semibold whitespace-nowrap bg-background">Null Percentage</th>
+                      <th className="border px-4 py-2 text-left font-semibold whitespace-nowrap bg-background">
+                        Column Name
+                      </th>
+                      <th className="border px-4 py-2 text-left font-semibold whitespace-nowrap bg-background">
+                        Data Type
+                      </th>
+                      <th className="border px-4 py-2 text-left font-semibold whitespace-nowrap bg-background">
+                        Null Count
+                      </th>
+                      <th className="border px-4 py-2 text-left font-semibold whitespace-nowrap bg-background">
+                        Null Percentage
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {info.columns.map((col, idx) => {
                       const nullCount = nullCounts[col] || 0;
-                      const nullPercentage = ((nullCount / info.shape[0]) * 100).toFixed(2);
+                      const nullPercentage = (
+                        (nullCount / info.shape[0]) *
+                        100
+                      ).toFixed(2);
                       return (
                         <tr key={col} className="hover:bg-muted/50">
-                          <td className="border px-4 py-2 whitespace-nowrap font-medium">{col}</td>
+                          <td className="border px-4 py-2 whitespace-nowrap font-medium">
+                            {col}
+                          </td>
                           <td className="border px-4 py-2 whitespace-nowrap">
                             <Badge variant="outline">{info.dtypes[idx]}</Badge>
                           </td>
@@ -247,7 +302,9 @@ const AnalyseFile = () => {
                           </td>
                           <td className="border px-4 py-2 whitespace-nowrap">
                             {nullCount > 0 ? (
-                              <Badge variant="destructive">{nullPercentage}%</Badge>
+                              <Badge variant="destructive">
+                                {nullPercentage}%
+                              </Badge>
                             ) : (
                               <Badge variant="secondary">0%</Badge>
                             )}
@@ -274,7 +331,10 @@ const AnalyseFile = () => {
                   return acc;
                 }, {} as Record<string, number>)
               ).map(([type, count]) => (
-                <div key={type} className="flex items-center justify-between p-2 border rounded-lg">
+                <div
+                  key={type}
+                  className="flex items-center justify-between p-2 border rounded-lg"
+                >
                   <span className="font-medium">{type}</span>
                   <Badge variant="outline">{count} columns</Badge>
                 </div>
@@ -292,7 +352,7 @@ const AnalyseFile = () => {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
           disabled={currentPage === 1 || loadingData}
         >
           <ChevronLeft className="h-4 w-4" />
@@ -301,7 +361,7 @@ const AnalyseFile = () => {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
           disabled={currentPage === totalPages || loadingData}
         >
           Next
@@ -330,13 +390,21 @@ const AnalyseFile = () => {
           </div>
         ) : (
           <>
-            <div className="relative w-full overflow-x-auto" style={{ maxHeight: '600px' }}>
+            <div
+              className="relative w-full overflow-x-auto"
+              style={{ maxHeight: "600px" }}
+            >
               <div className="min-w-full inline-block align-middle">
                 <table className="w-full border-collapse text-sm">
                   <thead className="sticky top-0 bg-background z-10">
                     <tr>
                       {Object.keys(allData[0] || {}).map((key) => (
-                        <th key={key} className="border px-4 py-2 text-left font-semibold whitespace-nowrap bg-background">{key}</th>
+                        <th
+                          key={key}
+                          className="border px-4 py-2 text-left font-semibold whitespace-nowrap bg-background"
+                        >
+                          {key}
+                        </th>
                       ))}
                     </tr>
                   </thead>
@@ -344,7 +412,12 @@ const AnalyseFile = () => {
                     {allData.map((row, idx) => (
                       <tr key={idx} className="hover:bg-muted/50">
                         {Object.values(row).map((val, i) => (
-                          <td key={i} className="border px-4 py-2 whitespace-nowrap">{String(val)}</td>
+                          <td
+                            key={i}
+                            className="border px-4 py-2 whitespace-nowrap"
+                          >
+                            {String(val)}
+                          </td>
                         ))}
                       </tr>
                     ))}
@@ -363,15 +436,17 @@ const AnalyseFile = () => {
     if (!info) return null;
 
     // Filter numeric columns
-    const numericColumns = info.columns.filter((_, idx) => 
-      info.dtypes[idx] === "float32" || info.dtypes[idx] === "int32"
+    const numericColumns = info.columns.filter(
+      (_, idx) => info.dtypes[idx] === "float32" || info.dtypes[idx] === "int32"
     );
 
     if (numericColumns.length < 2) {
       return (
         <Card>
           <CardContent className="pt-6">
-            <p className="text-muted-foreground">Not enough numeric columns for scatter plot</p>
+            <p className="text-muted-foreground">
+              Not enough numeric columns for scatter plot
+            </p>
           </CardContent>
         </Card>
       );
@@ -386,7 +461,9 @@ const AnalyseFile = () => {
           <div className="space-y-6">
             <div className="flex gap-4">
               <div className="flex-1">
-                <label className="text-sm font-medium mb-2 block">X-Axis Column</label>
+                <label className="text-sm font-medium mb-2 block">
+                  X-Axis Column
+                </label>
                 <Select
                   value={selectedXColumn}
                   onValueChange={setSelectedXColumn}
@@ -404,7 +481,9 @@ const AnalyseFile = () => {
                 </Select>
               </div>
               <div className="flex-1">
-                <label className="text-sm font-medium mb-2 block">Y-Axis Column</label>
+                <label className="text-sm font-medium mb-2 block">
+                  Y-Axis Column
+                </label>
                 <Select
                   value={selectedYColumn}
                   onValueChange={setSelectedYColumn}
@@ -441,15 +520,17 @@ const AnalyseFile = () => {
     if (!info) return null;
 
     // Filter numeric columns
-    const numericColumns = info.columns.filter((_, idx) => 
-      info.dtypes[idx] === "float32" || info.dtypes[idx] === "int32"
+    const numericColumns = info.columns.filter(
+      (_, idx) => info.dtypes[idx] === "float32" || info.dtypes[idx] === "int32"
     );
 
     if (numericColumns.length === 0) {
       return (
         <Card>
           <CardContent className="pt-6">
-            <p className="text-muted-foreground">No numeric columns available for box plot</p>
+            <p className="text-muted-foreground">
+              No numeric columns available for box plot
+            </p>
           </CardContent>
         </Card>
       );
@@ -464,7 +545,9 @@ const AnalyseFile = () => {
           <div className="space-y-6">
             <div className="flex gap-4">
               <div className="flex-1">
-                <label className="text-sm font-medium mb-2 block">Select Column</label>
+                <label className="text-sm font-medium mb-2 block">
+                  Select Column
+                </label>
                 <Select
                   value={selectedBoxPlotColumn}
                   onValueChange={setSelectedBoxPlotColumn}
@@ -528,7 +611,11 @@ const AnalyseFile = () => {
           </CardContent>
         </Card>
       ) : (
-        <Tabs defaultValue="overview" className="space-y-4">
+        <Tabs
+          defaultValue="overview"
+          className="space-y-4"
+          onValueChange={setActiveTab}
+        >
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="view">View File</TabsTrigger>
@@ -540,22 +627,37 @@ const AnalyseFile = () => {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
+            <div className="mb-2 text-muted-foreground text-sm">
+              {tabDescriptions["overview"]}
+            </div>
             {renderInfo()}
           </TabsContent>
 
           <TabsContent value="view">
+            <div className="mb-2 text-muted-foreground text-sm">
+              {tabDescriptions["view"]}
+            </div>
             {renderFullData()}
           </TabsContent>
 
           <TabsContent value="head">
+            <div className="mb-2 text-muted-foreground text-sm">
+              {tabDescriptions["head"]}
+            </div>
             {renderTable("First 5 Rows", head)}
           </TabsContent>
 
           <TabsContent value="tail">
+            <div className="mb-2 text-muted-foreground text-sm">
+              {tabDescriptions["tail"]}
+            </div>
             {renderTable("Last 5 Rows", tail)}
           </TabsContent>
 
           <TabsContent value="histograms">
+            <div className="mb-2 text-muted-foreground text-sm">
+              {tabDescriptions["histograms"]}
+            </div>
             <Card>
               <CardHeader>
                 <CardTitle>Numeric Column Distributions</CardTitle>
@@ -584,10 +686,16 @@ const AnalyseFile = () => {
           </TabsContent>
 
           <TabsContent value="scatter">
+            <div className="mb-2 text-muted-foreground text-sm">
+              {tabDescriptions["scatter"]}
+            </div>
             {renderScatterPlot()}
           </TabsContent>
 
           <TabsContent value="boxplot">
+            <div className="mb-2 text-muted-foreground text-sm">
+              {tabDescriptions["boxplot"]}
+            </div>
             {renderBoxPlot()}
           </TabsContent>
         </Tabs>
@@ -599,7 +707,9 @@ const AnalyseFile = () => {
           <DialogHeader>
             <DialogTitle>Delete File</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{formatFileName(decodeURIComponent(fileName || ""))}"? This action cannot be undone.
+              Are you sure you want to delete "
+              {formatFileName(decodeURIComponent(fileName || ""))}"? This action
+              cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -609,10 +719,7 @@ const AnalyseFile = () => {
             >
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-            >
+            <Button variant="destructive" onClick={handleDelete}>
               Delete
             </Button>
           </DialogFooter>

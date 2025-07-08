@@ -2,6 +2,21 @@ import * as dfd from "danfojs-node";
 import { downloadFile } from "../utils/fileHelper.js";
 import fs from "fs";
 
+function cleanCSV(filePath) {
+  const lines = fs.readFileSync(filePath, "utf-8").split("\n");
+  const header = lines[0];
+  const expectedColumns = header.split(",").length;
+
+  const cleanedLines = lines.filter((line, idx) => {
+    const count = line.split(",").length;
+    return count === expectedColumns || idx === 0;
+  });
+
+  const cleanedPath = filePath.replace(".csv", "_cleaned.csv");
+  fs.writeFileSync(cleanedPath, cleanedLines.join("\n"));
+  return cleanedPath;
+}
+
 const AnalyseController = {
   getHead: async (req, res) => {
     const { fileUrl } = req.body;
